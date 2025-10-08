@@ -57,6 +57,8 @@ hippoApp::registerAll(Factory & f, ActionFactory & af, Syntax & syntax)
 
   // Add [FoamPostprocessors] block
   registerSyntax("AddPostprocessorAction", "FoamPostprocessors/*");
+  syntax.registerSyntaxType("FoamPostprocessors/*", "PostprocessorName");
+  syntax.registerSyntaxType("FoamPostprocessors/*", "UserObjectName");
 }
 
 void
