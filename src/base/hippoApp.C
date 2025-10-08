@@ -54,11 +54,6 @@ hippoApp::registerAll(Factory & f, ActionFactory & af, Syntax & syntax)
   registerSyntaxTask("AddFoamBCAction", "Problem", "check_deprecated_bc");
   registerMooseObjectTask("check_deprecated_bc", Problem, false);
   addTaskDependency("add_aux_variable", "check_deprecated_bc");
-
-  // Add [FoamPostprocessors] block
-  registerSyntax("AddPostprocessorAction", "FoamPostprocessors/*");
-  syntax.registerSyntaxType("FoamPostprocessors/*", "PostprocessorName");
-  syntax.registerSyntaxType("FoamPostprocessors/*", "UserObjectName");
 }
 
 void
