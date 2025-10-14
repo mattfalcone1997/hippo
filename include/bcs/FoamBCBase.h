@@ -20,7 +20,7 @@ public:
   std::string foamVariable() const { return _foam_variable; };
 
   // returns the moose AuxVariable imposed on OpenFOAM
-  VariableName mooseVariable() const { return _moose_var->name(); }
+  VariableName mooseVariable() const { return (_moose_var) ? _moose_var->name() : "N/A"; }
 
   // returns foam variable BC applies to
   std::vector<SubdomainName> boundary() const { return _boundary; };
