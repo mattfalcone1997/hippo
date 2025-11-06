@@ -150,22 +150,6 @@ FoamProblem::verifyFoamVariables()
   vt.print(_console);
 }
 
-// Create comma separated list from vector
-template <typename StrType>
-inline std::string
-listFromVector(std::vector<StrType> vec, StrType sep = ", ")
-{
-  if (vec.size() == 0)
-    return std::string();
-  else if (vec.size() == 1)
-    return vec.at(0);
-
-  std::string str;
-  auto binary_op = [&](const std::string & acc, const std::string & it) { return acc + sep + it; };
-  std::accumulate(vec.begin(), vec.end(), str, binary_op);
-  return str;
-}
-
 void
 FoamProblem::verifyFoamBCs()
 {
@@ -185,7 +169,7 @@ FoamProblem::verifyFoamBCs()
       "FoamBC name",
       "Type",
       "Foam variable",
-      "Moose variable",
+      "Moose variable/postprocessor",
       "Boundaries",
   });
 
@@ -203,11 +187,7 @@ FoamProblem::verifyFoamBCs()
         auto && boundary = bc->boundary();
         used_bcs.insert(used_bcs.end(), boundary.begin(), boundary.end());
         // List info about BC
-        vt.addRow(bc->name(),
-                  bc->type(),
-                  bc->foamVariable(),
-                  bc->mooseVariable(),
-                  listFromVector(boundary));
+        bc->addInfoRow(vt);
       }
     }
 

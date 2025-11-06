@@ -1,5 +1,6 @@
-#include "FoamBCBase.h"
+#include "FoamVariableBCBase.h"
 #include "FoamMappedInletBCBase.h"
+#include "FoamVariableBCBase.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
 #include "Pstream.H"
@@ -230,7 +231,7 @@ FoamMappedInletBCBase::createPatchProcMap()
 InputParameters
 FoamMappedInletBCBase::validParams()
 {
-  auto params = FoamBCBase::validParams();
+  auto params = FoamVariableBCBase::validParams();
   params.remove("v");
   params.remove("initial_condition");
   params.remove("foam_variable");
@@ -247,7 +248,7 @@ FoamMappedInletBCBase::validParams()
 }
 
 FoamMappedInletBCBase::FoamMappedInletBCBase(const InputParameters & params)
-  : FoamBCBase(params),
+  : FoamVariableBCBase(params),
     PostprocessorInterface(this),
     _pp_name(params.get<PostprocessorName>("mass_flow_pp")),
     _offset(),
