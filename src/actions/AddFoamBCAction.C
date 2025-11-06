@@ -1,12 +1,25 @@
 #include "AddFoamBCAction.h"
 #include "InputParameters.h"
+#include "MooseEnum.h"
 #include "MooseObjectAction.h"
 #include "FoamProblem.h"
 #include "FoamFixedValueBC.h"
 #include "FoamFixedGradientBC.h"
+#include <algorithm>
 
 registerMooseAction("hippoApp", AddFoamBCAction, "add_foam_bc");
 registerMooseAction("hippoApp", AddFoamBCAction, "check_deprecated_bc");
+
+namespace
+{
+inline bool
+findParamKey(const InputParameters & params, const std::string & key)
+{
+  return std::find_if(params.begin(),
+                      params.end(),
+                      [&](const auto & param) { return param.first == key; }) != params.end();
+}
+}
 
 InputParameters
 AddFoamBCAction::validParams()
@@ -32,8 +45,11 @@ AddFoamBCAction::act()
           "Old BC syntax (Problem/temp, Problem/heat_flux) cannot be used with FoamBCs system");
 
     // Do not create aux variable if variable provided.
-    if (!_moose_object_pars.isParamSetByUser("v"))
+    if (findParamKey(_moose_object_pars, "v") && !_moose_object_pars.isParamSetByUser("v"))
       createAuxVariable();
+
+    if (findParamKey(_moose_object_pars, "pp") && !_moose_object_pars.isParamSetByUser("pp"))
+      createReceiver(*foam_problem);
 
     foam_problem->addObject<FoamBCBase>(_type, _name, _moose_object_pars, false);
   }
@@ -99,4 +115,13 @@ AddFoamBCAction::addOldStyleBCs(FoamProblem & problem)
     params.set<FEProblemBase *>("_fe_problem_base") = &problem;
     problem.addObject<FoamFixedGradientBC>("FoamFixedGradientBC", var_name, params);
   }
+}
+
+void
+AddFoamBCAction::createReceiver(FoamProblem & problem)
+{
+  auto params = _factory.getValidParams("Receiver");
+
+  copyParamFromParam<Real>(params, _moose_object_pars, "default");
+  problem.addPostprocessor("Receiver", name(), params);
 }

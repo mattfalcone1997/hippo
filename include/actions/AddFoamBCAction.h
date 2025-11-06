@@ -26,4 +26,7 @@ protected:
 
   // Create AuxVariable associated with new-style BCs
   void createAuxVariable();
+
+  // Create Receiver for Postprocessor-based BCs
+  void createReceiver(FoamProblem & problem);
 };
