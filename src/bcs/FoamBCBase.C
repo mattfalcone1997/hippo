@@ -14,7 +14,10 @@ FoamBCBase::validParams()
   InputParameters params = MooseObject::validParams();
   params.addParam<std::vector<SubdomainName>>("boundary",
                                               "Boundaries that the boundary condition applies to.");
+  params.addRequiredParam<std::string>("foam_variable",
+                                       "Name of a Foam field. e.g. T (temperature) U (velocity).");
 
+  params.addPrivateParam("_foam_var_settable", true);
   params.registerSystemAttributeName("FoamBC");
   params.registerBase("FoamBC");
 
@@ -32,6 +35,11 @@ FoamBCBase::FoamBCBase(const InputParameters & params)
     mooseError("FoamBC system can only be used with FoamProblem");
 
   _mesh = &problem->mesh();
+
+  // check that the foam variable exists if
+  if (!params.isPrivate("foam_variable") &&
+      !_mesh->fvMesh().foundObject<Foam::volScalarField>(_foam_variable))
+    mooseError("There is no OpenFOAM field named '", _foam_variable, "'");
 
   // check that the boundary is in the FoamMesh
   auto all_subdomain_names = _mesh->getSubdomainNames(_mesh->getSubdomainList());

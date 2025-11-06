@@ -15,9 +15,6 @@ InputParameters
 FoamVariableBCBase::validParams()
 {
   InputParameters params = FoamBCBase::validParams();
-  params.addRequiredParam<std::string>("foam_variable",
-                                       "Name of a Foam field. e.g. T (temperature) U (velocity).");
-
   params.addParam<VariableName>(
       "v",
       "Optional variable to use in BC. This allows existing AuxVariables to be"
@@ -31,9 +28,6 @@ FoamVariableBCBase::validParams()
 FoamVariableBCBase::FoamVariableBCBase(const InputParameters & params)
   : FoamBCBase(params), _moose_var(nullptr)
 {
-  // check that the foam variable exists
-  if (!_mesh->fvMesh().foundObject<Foam::volScalarField>(_foam_variable))
-    mooseError("There is no OpenFOAM field named '", _foam_variable, "'");
 }
 
 void
@@ -53,11 +47,10 @@ FoamVariableBCBase::initialSetup()
 }
 
 void
-FoamVariableBCBase::addInfoRow(BCInfoTable table)
+FoamVariableBCBase::addInfoRow(BCInfoTable & table)
 {
   // List info about BC
-  if (_moose_var)
-    table.addRow(name(), type(), foamVariable(), mooseVariable(), listFromVector(boundary()));
+  table.addRow(name(), type(), foamVariable(), mooseVariable(), listFromVector(boundary()));
 }
 
 Real
