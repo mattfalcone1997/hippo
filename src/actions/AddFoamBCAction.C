@@ -44,10 +44,11 @@ AddFoamBCAction::act()
       mooseError(
           "Old BC syntax (Problem/temp, Problem/heat_flux) cannot be used with FoamBCs system");
 
-    // Do not create aux variable if variable provided.
+    // Do not create aux variable if v provided and v is an allowed parameter
     if (findParamKey(_moose_object_pars, "v") && !_moose_object_pars.isParamSetByUser("v"))
       createAuxVariable();
 
+    // Create receiver if pp not provided and pp is an allowed parameter
     if (findParamKey(_moose_object_pars, "pp") && !_moose_object_pars.isParamSetByUser("pp"))
       createReceiver(*foam_problem);
 
