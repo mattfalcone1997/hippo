@@ -14,9 +14,6 @@ jobs:
       image: quay.io/ukaea/hippo:f4111251770f96aa77a0
     steps:
       - uses: actions/checkout@v4
-      - name: Install apptainer
-        shell: bash
-        run: sudo dnf install -y https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer-1.4.5-1.x86_64.rpm
       - name: Quality Checks
         run: |
           # As we're running in our own container, we're not the same user as is

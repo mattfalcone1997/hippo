@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: quay.io/ukaea/hippo:f4111251770f96aa77a0
+From: quay.io/ukaea/hippo:caa3995ace43771bcaba
 
 %files
     . /opt/hippo/
@@ -10,8 +10,6 @@ From: quay.io/ukaea/hippo:f4111251770f96aa77a0
 %post
     export MPI_ROOT=/opt/openmpi
     export MOOSE_DIR=/opt/moose
-    cp /root/.OpenFOAM/prefs.sh /opt/openfoam/OpenFOAM-12/etc
-    sed -i 's|export FOAM_INST_DIR=\$HOME/\$WM_PROJECT|export FOAM_INST_DIR=/opt/openfoam|' /opt/openfoam/OpenFOAM-12/etc/bashrc
 
     source  /opt/openfoam/OpenFOAM-12/etc/bashrc || true
     cd /opt/hippo/
