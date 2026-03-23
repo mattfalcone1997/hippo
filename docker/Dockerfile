@@ -113,7 +113,6 @@ WORKDIR "/opt/hippo"
 # Build MOOSE
 RUN git clone --depth=1 --branch 2025-09-05-release https://github.com/idaholab/moose.git "${MOOSE_DIR}"
 RUN make -C "${MOOSE_DIR}/modules/heat_transfer" -j $MOOSE_JOBS METHOD=opt
-RUN make -C "${MOOSE_DIR}/modules/heat_transfer" -j $MOOSE_JOBS METHOD=dbg
 
 # Build OpenFOAM
 # Ugly, but the Zoltan build looks for things in 'lib64' that are in 'lib'
