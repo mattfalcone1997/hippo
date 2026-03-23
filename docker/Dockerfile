@@ -101,7 +101,7 @@ RUN ln -s /opt/miniforge3/bin/python3-config /opt/miniforge3/bin/python-config
 RUN wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer-1.4.5.tar.gz && \
     tar -xzf apptainer-1.4.5.tar.gz && \
     cd apptainer-1.4.5 && \
-    ./mconfig --without-suid && \
+    ./mconfig --with-suid && \
     make -C builddir && \
     make -C builddir install && \
     cd .. && \
