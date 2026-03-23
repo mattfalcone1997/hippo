@@ -56,6 +56,7 @@ RUN dnf --enablerepo=devel install -y \
         libtirpc-devel \
         make \
         wget \
+        golang \
         zlib-devel \
     && wget https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/g/glpk-4.65-4.el8.x86_64.rpm \
     && wget https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/g/glpk-devel-4.65-4.el8.x86_64.rpm \
@@ -63,9 +64,6 @@ RUN dnf --enablerepo=devel install -y \
         ./glpk-4.65-4.el8.x86_64.rpm \
         ./glpk-devel-4.65-4.el8.x86_64.rpm \
     && rm glpk-* \
-    && wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer-1.4.5-1.x86_64.rpm \
-    && dnf install -y apptainer-1.4.5-1.x86_64.rpm \
-    && rm apptainer-1.4.5-1.x86_64.rpm \
     && dnf clean all
 
 # MOOSE
@@ -98,6 +96,17 @@ ENV CONDA_DEFAULT_ENV=base
 ENV PATH="${CONDA_PREFIX}/bin:/opt/miniforge3/condabin:${PATH}"
 ENV CPLUS_INCLUDE_PATH="/opt/miniforge3/include/python3.12:${CPLUS_INCLUDE_PATH}"
 RUN ln -s /opt/miniforge3/bin/python3-config /opt/miniforge3/bin/python-config
+
+# install apptainer from source
+RUN wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer-1.4.5.tar.gz && \
+    tar -xzf apptainer-1.4.5.tar.gz && \
+    cd apptainer-1.4.5 && \
+    ./mconfig --without-suid && \
+    make -C builddir && \
+    make -C builddir install && \
+    cd .. && \
+    rm -r apptainer-* && \
+    apptainer --version
 
 WORKDIR "/opt/hippo"
 
