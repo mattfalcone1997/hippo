@@ -11,7 +11,7 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     container:
-      image: quay.io/ukaea/hippo:caa3995ace43771bcaba
+      image: quay.io/ukaea/hippo:1c8bba64a7b5a2c19e83
     steps:
       - uses: actions/checkout@v4
       - name: Quality Checks
