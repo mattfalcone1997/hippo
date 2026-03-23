@@ -10,10 +10,16 @@ on:
 jobs:
   build-test:
     runs-on: ubuntu-latest
-    container:
-      image: quay.io/ukaea/hippo:1c8bba64a7b5a2c19e83
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          pip_install: pre-commit
+      - name: Install apptainer
+        run: |
+          wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer_1.4.5_amd64.deb
+          apt install -y ./apptainer_1.4.5_amd64.deb
+          sed -i 's/sessiondir max size = 64/sessiondir max size = 2000/' /etc/apptainer/apptainer.conf
       - name: Quality Checks
         run: |
           # As we're running in our own container, we're not the same user as is
@@ -21,13 +27,13 @@ jobs:
           # https://github.com/actions/checkout/issues/766
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config --global --add safe.directory /opt/moose
+          pip install pre-commit
           pre-commit install
           SKIP=no-commit-to-branch pre-commit run --all
       - name: Build apptainer production container
         run: apptainer build hippo-release.sif apptainer/hippo-release.def
       - name: Test production container
         run: |
-          sed -i 's/sessiondir max size = 64/sessiondir max size = 2000/' /etc/apptainer/apptainer.conf
           apptainer run --writable-tmpfs hippo_release.sif --tests
       - name: Docs
         shell: bash
