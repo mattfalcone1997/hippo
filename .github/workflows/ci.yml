@@ -18,8 +18,8 @@ jobs:
       - name: Install apptainer
         run: |
           wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer_1.4.5_amd64.deb
-          apt install -y ./apptainer_1.4.5_amd64.deb
-          sed -i 's/sessiondir max size = 64/sessiondir max size = 2000/' /etc/apptainer/apptainer.conf
+          sudo apt install -y ./apptainer_1.4.5_amd64.deb
+          sudo sed -i 's/sessiondir max size = 64/sessiondir max size = 2000/' /etc/apptainer/apptainer.conf
       - name: Quality Checks
         run: |
           # As we're running in our own container, we're not the same user as is
