@@ -34,7 +34,7 @@ jobs:
         shell: bash
         run: |
           cd doc
-          apptainer exec hippo-release.sif ./moosedocs.py build --destination=htmldoc
+          apptainer exec ../hippo-release.sif ./moosedocs.py build --destination=htmldoc
           [ -f htmldoc/index.html ]
 
       - name: Artifact docs
