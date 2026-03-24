@@ -29,12 +29,12 @@ jobs:
         run: sudo apptainer build hippo-release.sif apptainer/hippo-release.def
       - name: Test production container
         run: |
-          apptainer exec --writable-tmpfs hippo-release.sif "cd /opt/hippo && ./run_tests"
+          apptainer exec --writable-tmpfs hippo-release.sif bash -c "cd /opt/hippo && ./run_tests"
       - name: Docs
         shell: bash
         run: |
-          apptainer exec ../hippo-release.sif "cd /opt/hippo/docs && ./moosedocs.py build --destination=$HOME/hippo/htmldoc"
-          [ -f htmldoc/index.html ]
+          apptainer exec ../hippo-release.sif bash -c "cd /opt/hippo/docs && ./moosedocs.py build --destination=$HOME/hippo/htmldoc"
+          [ -f $HOME/hippo/htmldoc/index.html ]
 
       - name: Artifact docs
         id: deployment
