@@ -13,9 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: eWaterCycle/setup-apptainer@v2
-        with:
-          apptainer-version: 1.4.5
+      - name: Install apptainer
+        run: |
+          wget https://github.com/apptainer/apptainer/releases/download/v1.4.5/apptainer_1.4.5_amd64.deb
+          sudo apt install -y ./apptainer_1.4.5_amd64.deb
       - name: Login to remote
         run: apptainer registry login -u ${{ secrets.QUAY_ID }} -p ${{ secrets.QUAY_TOKEN }} oras://quay.io
       - name: build container
