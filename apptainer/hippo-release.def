@@ -33,6 +33,7 @@ From: quay.io/ukaea/hippo:1c8bba64a7b5a2c19e83
     source /opt/openfoam/OpenFOAM-12/etc/bashrc
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/root/OpenFOAM/hippo-user-12/platforms/linux64GccDPInt32Opt/lib/
     unset FOAM_SIGFPE
+    export PMIX_MCA_gds=hash
 
 
 %runscript
