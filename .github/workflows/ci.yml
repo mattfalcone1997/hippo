@@ -33,14 +33,14 @@ jobs:
       - name: Docs
         shell: bash
         run: |
-          apptainer exec hippo-release.sif bash -c "cd /opt/hippo/doc && ./moosedocs.py build --destination=$HOME/hippo/htmldoc"
-          [ -f $HOME/hippo/htmldoc/index.html ]
+          apptainer exec hippo-release.sif bash -c "cd /opt/hippo/doc && ./moosedocs.py build --destination=${{ github.workspace }}/doc/htmldoc"
+          [ -f ${{ github.workspace }}/doc/htmldoc/index.html ]
 
       - name: Artifact docs
         id: deployment
         uses: actions/upload-pages-artifact@v3
         with:
-          path: $HOME/hippo/doc/htmldoc
+          path: ${{ github.workspace }}/doc/htmldoc
 
   deploy-docs:
     runs-on: ubuntu-latest
