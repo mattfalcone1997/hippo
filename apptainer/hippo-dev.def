@@ -1,5 +1,5 @@
 Bootstrap: oras
-From: ghcr.io/idaholab/apptainer/moose-dev-mpich-x86_64:2026.02.20
+From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.02.20
 
 %arguments
     MOOSE_JOBS=4
@@ -12,6 +12,13 @@ From: ghcr.io/idaholab/apptainer/moose-dev-mpich-x86_64:2026.02.20
     ./scripts/openfoam-prefs.sh /root/.OpenFOAM/prefs.sh
 
 %post
+    for method in oprof devel; do \
+        find ${LIBMESH_DIR}/lib -name "*_$method.so*" -delete -print; \
+        find ${LIBMESH_DIR}/lib -name "*_$method.la" -delete -print; \
+        find ${LIBMESH_DIR}/bin -name "*-$method" -delete -print; \
+        find ${LIBMESH_DIR} -name "*-$method.pc" -delete -print; \
+    done
+
     dnf --enablerepo=devel install -y \
         findutils \
         flex \
@@ -43,16 +50,16 @@ From: ghcr.io/idaholab/apptainer/moose-dev-mpich-x86_64:2026.02.20
     export VTKLIB_DIR=/opt/vtk/lib
 
     # MPI
-    export MPI_ROOT=/opt/mpich
-    export MPI_ARCH_INC="-I/opt/mpich/include"
-    export MPI_ARCH_LIBS="-L/opt/mpich/lib -lmpi"
+    export MPI_ROOT=/opt/openmpi
+    export MPI_ARCH_INC="-I/opt/openmpi/include"
+    export MPI_ARCH_LIBS="-L/opt/openmpi/lib -lmpi"
     export LD_LIBRARY_PATH="${MPI_ROOT}/lib:${LD_LIBRARY_PATH}"
     export PATH="${MPI_ROOT}/bin:${PATH}"
     # Compiler
-    export CC=/opt/mpich/bin/mpicc
-    export CXX=/opt/mpich/bin/mpicxx
-    export F77=/opt/mpich/bin/mpif77
-    export F90=/opt/mpich/bin/mpif90
+    export CC=/opt/openmpi/bin/mpicc
+    export CXX=/opt/openmpi/bin/mpicxx
+    export F77=/opt/openmpi/bin/mpif77
+    export F90=/opt/openmpi/bin/mpif90
     export PATH="/opt/rh/gcc-toolset-12/root/usr/bin:${PATH}"
     export CPLUS_INCLUDE_PATH="/opt/rh/gcc-toolset-12/root/usr/include/c++/12:${CPLUS_INCLUDE_PATH}"
     export LD_LIBRARY_PATH="/opt/rh/gcc-toolset-12/root/usr/lib64:/opt/rh/gcc-toolset-12/root/usr/lib:${LD_LIBRARY_PATH}"
@@ -70,7 +77,7 @@ From: ghcr.io/idaholab/apptainer/moose-dev-mpich-x86_64:2026.02.20
     git clone --depth=1 --branch release \
                  https://github.com/idaholab/moose.git "${MOOSE_DIR}"
 
-    conda install pyyaml --yes --quiet
+    conda install pyyaml jinja2 --yes --quiet
 
     make -C "${MOOSE_DIR}/modules/heat_transfer" -j {{ MOOSE_JOBS }} METHOD=opt
     make -C "${MOOSE_DIR}/modules/heat_transfer" -j {{ MOOSE_JOBS }} METHOD=dbg
@@ -82,9 +89,7 @@ From: ghcr.io/idaholab/apptainer/moose-dev-mpich-x86_64:2026.02.20
     ./scripts/install-openfoam.sh -o /opt/openfoam -s -j {{ OPENFOAM_JOBS }} -q
     sed -i 's|export FOAM_INST_DIR=\$HOME/\$WM_PROJECT|export FOAM_INST_DIR=/opt/openfoam|' /opt/openfoam/OpenFOAM-12/etc/bashrc
 
-    conda install pre-commit --file /opt/hippo/requirements.test.txt -S --yes --quiet
-
-    git -C "${MOOSE_DIR}" submodule update --init large_media
+    conda install --file /opt/hippo/requirements.test.txt -S --yes --quiet
 
     groupadd -g 1001 --non-unique hippo-test-user
     useradd -u 1001 -g 1001 --shell /bin/bash --create-home hippo-test-user
@@ -94,8 +99,4 @@ From: ghcr.io/idaholab/apptainer/moose-dev-mpich-x86_64:2026.02.20
     . /opt/openfoam/OpenFOAM-12/etc/bashrc
     unset FOAM_SIGFPE
     export MOOSE_DIR=/opt/moose
-    export MPI_ROOT=/opt/mpich
-
-%runscript
-    #!/bin/bash
-    exec /opt/hippo/hippo-opt $@
+    export MPI_ROOT=/opt/openmpi
