@@ -33,7 +33,7 @@ jobs:
       - name: Docs
         shell: bash
         run: |
-          apptainer exec hippo-release.sif bash -c "cd /opt/hippo/docs && ./moosedocs.py build --destination=$HOME/hippo/htmldoc"
+          apptainer exec hippo-release.sif bash -c "cd /opt/hippo/doc && ./moosedocs.py build --destination=$HOME/hippo/htmldoc"
           [ -f $HOME/hippo/htmldoc/index.html ]
 
       - name: Artifact docs
