@@ -39,9 +39,4 @@ From: quay.io/ukaea/hippo:1c8bba64a7b5a2c19e83
 %runscript
     #!/bin/bash
 
-    if [ "$1" = "--tests" ]; then
-        cd /opt/hippo
-        ./run_tests
-    else
-        exec hippo-opt $@
-    fi
+    exec hippo-opt $@
