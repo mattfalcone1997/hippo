@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: quay.io/ukaea/hippo:1c8bba64a7b5a2c19e83
+From: quay.io/ukaea/hippo:dev-6d8b9672f7
 
 %files
     . /opt/hippo/
@@ -20,7 +20,7 @@ From: quay.io/ukaea/hippo:1c8bba64a7b5a2c19e83
     rm -rf lib test/lib
 
     make -j {{ MOOSE_JOBS }} all METHOD=opt
-    #make -j {{ MOOSE_JOBS }} all METHOD=dbg
+    make -j {{ MOOSE_JOBS }} all METHOD=dbg
     chown -R hippo-user:hippo-user /opt/hippo
 
 %environment
