@@ -1,4 +1,4 @@
-Bootstrap: docker
+Bootstrap: oras
 From: quay.io/ukaea/hippo:dev-6d8b9672f7
 
 %files
