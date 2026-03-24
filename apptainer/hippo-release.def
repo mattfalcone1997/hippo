@@ -21,7 +21,7 @@ From: quay.io/ukaea/hippo:dev-6d8b9672f7
 
     make -j {{ MOOSE_JOBS }} all METHOD=opt
     make -j {{ MOOSE_JOBS }} all METHOD=dbg
-    chown -R hippo-user:hippo-user /opt/hippo
+    chown -R hippo-test-user:hippo-test-user /opt/hippo
 
 %environment
     export MPI_ROOT=/opt/openmpi
