@@ -64,15 +64,13 @@ From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.02.20
     export CPLUS_INCLUDE_PATH="/opt/rh/gcc-toolset-12/root/usr/include/c++/12:${CPLUS_INCLUDE_PATH}"
     export LD_LIBRARY_PATH="/opt/rh/gcc-toolset-12/root/usr/lib64:/opt/rh/gcc-toolset-12/root/usr/lib:${LD_LIBRARY_PATH}"
     # Conda
-    export CONDA_PREFIX=/opt/miniforge3
+    export CONDA_PREFIX=/opt/miniforge3/envs/moose
     export CONDA_SHLVL=1
-    export CONDA_EXE=/opt/miniforge3/bin/conda
-    export CONDA_PYTHON_EXE=/opt/miniforge3/bin/python
-    export CONDA_DEFAULT_export=base
+    export CONDA_EXE=/opt/miniforge3/envs/moose/bin/conda
+    export CONDA_PYTHON_EXE=/opt/miniforge3/envs/moose/bin/python
+    export CONDA_DEFAULT_ENV=moose
     export PATH="${CONDA_PREFIX}/bin:/opt/miniforge3/condabin:${PATH}"
-    export CPLUS_INCLUDE_PATH="/opt/miniforge3/include/python3.12:${CPLUS_INCLUDE_PATH}"
-
-    ln -s /opt/miniforge3/bin/python3-config /opt/miniforge3/bin/python-config
+    export CPLUS_INCLUDE_PATH="${CONDA_PREFIX}/include/python3.14:${CPLUS_INCLUDE_PATH}"
 
     git clone --depth=1 --branch release \
                  https://github.com/idaholab/moose.git "${MOOSE_DIR}"
