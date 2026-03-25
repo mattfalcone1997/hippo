@@ -1,5 +1,5 @@
 Bootstrap: oras
-From: quay.io/ukaea/hippo:dev-6d8b9672f7
+From: quay.io/ukaea/hippo:dev-e8a6d6f081
 
 %files
     . /opt/hippo/
@@ -21,7 +21,6 @@ From: quay.io/ukaea/hippo:dev-6d8b9672f7
 
     make -j {{ MOOSE_JOBS }} all METHOD=opt
     make -j {{ MOOSE_JOBS }} all METHOD=dbg
-    chown -R hippo-test-user:hippo-test-user /opt/hippo
 
 %environment
     export MPI_ROOT=/opt/openmpi
