@@ -85,6 +85,7 @@ From: ghcr.io/idaholab/apptainer/moose-dev-openmpi-x86_64:2026.02.20
 
     cd /opt/hippo
     ./scripts/install-openfoam.sh -o /opt/openfoam -s -j {{ OPENFOAM_JOBS }} -q
+    cp /root/.OpenFOAM/prefs.sh /opt/openfoam/OpenFOAM-12/etc
     sed -i 's|export FOAM_INST_DIR=\$HOME/\$WM_PROJECT|export FOAM_INST_DIR=/opt/openfoam|' /opt/openfoam/OpenFOAM-12/etc/bashrc
 
     conda install --file /opt/hippo/requirements.test.txt -S --yes --quiet
