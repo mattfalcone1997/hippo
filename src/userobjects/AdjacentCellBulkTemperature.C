@@ -47,10 +47,11 @@ AdjacentCellBulkTemperature::AdjacentCellBulkTemperature(const InputParameters &
 void
 AdjacentCellBulkTemperature::initialize()
 {
-  int size = _foam_patch.size();
+  const int size = _foam_patch.size();
   int gl_size;
-  int nProcs{Foam::UPstream::nProcs()};
-  MPI_Comm comm{(nProcs == 1) ? MPI_COMM_WORLD : Foam::PstreamGlobals::MPI_COMM_FOAM};
+
+  const int nProcs{Foam::UPstream::nProcs()};
+  const MPI_Comm comm{(nProcs == 1) ? MPI_COMM_WORLD : Foam::PstreamGlobals::MPI_COMM_FOAM};
 
   MPI_Allreduce(&size, &gl_size, 1, MPI_INT, MPI_SUM, comm);
   _gl_t_adjacent.resize(gl_size);
@@ -64,15 +65,16 @@ AdjacentCellBulkTemperature::buildKDTree()
 {
   Foam::vectorField face_centres = _foam_patch.Cf();
 
-  int nProcs{Foam::UPstream::nProcs()};
+  const int nProcs{Foam::UPstream::nProcs()};
 
   std::vector<int> face_sizes{nProcs};
   std::vector<int> face_displs{nProcs};
   _mpi_sizes.resize(nProcs);
   _mpi_displs.resize(nProcs);
 
-  MPI_Comm comm{(nProcs == 1) ? MPI_COMM_WORLD : Foam::PstreamGlobals::MPI_COMM_FOAM};
+  const MPI_Comm comm{(nProcs == 1) ? MPI_COMM_WORLD : Foam::PstreamGlobals::MPI_COMM_FOAM};
 
+  // Create parameters for MPI gather operations to be reused in execute
   const int l_num_faces = face_centres.size();
   MPI_Allgather(&l_num_faces, 1, MPI_INT, _mpi_sizes.data(), 1, MPI_INT, comm);
   _mpi_displs[0] = 0;
@@ -81,6 +83,7 @@ AdjacentCellBulkTemperature::buildKDTree()
     _mpi_displs[i + 1] = _mpi_displs[i] + _mpi_sizes[i];
   }
 
+  // Account for vector for gathering coordinates
   for (int i = 0; i < nProcs; ++i)
   {
     face_sizes[i] = _mpi_sizes[i] * 3;
@@ -97,6 +100,7 @@ AdjacentCellBulkTemperature::buildKDTree()
                  MPI_DOUBLE,
                  comm);
 
+  // Create KD tree
   for (int i = 0; i < gl_face_centres.size(); ++i)
   {
     const Foam::point & p = gl_face_centres[i];
@@ -111,6 +115,7 @@ AdjacentCellBulkTemperature::execute()
   if (getParam<bool>("reconstruct_tree"))
     buildKDTree();
 
+  // Gather Temperature on each execute
   Foam::scalarField l_t_adjacent{_foam_patch.Cf().size()};
 
   const auto & T = getFvMesh().lookupObject<Foam::volScalarField>(getParam<std::string>("T_name"));
@@ -120,8 +125,8 @@ AdjacentCellBulkTemperature::execute()
     l_t_adjacent[i] = T[idx];
   }
 
-  int nProcs{Foam::UPstream::nProcs()};
-  MPI_Comm comm{(nProcs == 1) ? MPI_COMM_WORLD : Foam::PstreamGlobals::MPI_COMM_FOAM};
+  const int nProcs{Foam::UPstream::nProcs()};
+  const MPI_Comm comm{(nProcs == 1) ? MPI_COMM_WORLD : Foam::PstreamGlobals::MPI_COMM_FOAM};
   MPI_Allgatherv(l_t_adjacent.data(),
                  l_t_adjacent.size(),
                  MPI_DOUBLE,
