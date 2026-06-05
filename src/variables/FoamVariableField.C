@@ -1,8 +1,7 @@
+#include "FoamFieldBase.h"
 #include "FoamVariableField.h"
-#include "HippoObject.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
-#include "MooseVariableBase.h"
 #include "FoamProblem.h"
 
 registerMooseObject("hippoApp", FoamVariableField);
@@ -10,21 +9,15 @@ registerMooseObject("hippoApp", FoamVariableField);
 InputParameters
 FoamVariableField::validParams()
 {
-  auto params = HippoObject::validParams();
-
+  auto params = FoamFieldBase::validParams();
   params.addRequiredParam<std::string>("foam_variable",
                                        "OpenFOAM variable or functionObject to be shadowed");
 
-  // Get desired parameters from Variable objects
-  params.transferParam<std::vector<Real>>(MooseVariableBase::validParams(), "initial_condition");
-
-  params.registerBase("FoamVariable");
-  params.registerSystemAttributeName("FoamVariable");
   return params;
 }
 
 FoamVariableField::FoamVariableField(const InputParameters & params)
-  : HippoObject(params), _foam_variable(params.get<std::string>("foam_variable"))
+  : FoamFieldBase(params), _foam_variable(params.get<std::string>("foam_variable"))
 {
 }
 
