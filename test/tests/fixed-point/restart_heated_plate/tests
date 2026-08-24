@@ -1,12 +1,25 @@
 [Tests]
     [heated_plate_restart]
+        requirement = "Test the cases using fixed-point iteration restart correctly"
         [setup]
             type = RunCommand
-            command = 'bash -c "foamCleanCase -case fluid-openfoam && blockMesh -case fluid-openfoam && decomposePar -case fluid-openfoam"'
+            command = 'bash -c "foamCleanCase -case fluid-openfoam && rm -rf gold && blockMesh -case fluid-openfoam && decomposePar -case fluid-openfoam"'
+        []
+        [run_reference]
+            type = RunApp
+            prereq = heated_plate_restart/setup
+            input = heated_plate.i
+            min_parallel = 4
+            max_parallel = 4
+        []
+        [copy_reference]
+            type = RunCommand
+            command = 'bash -c "reconstructPar -case fluid-openfoam && mkdir -p gold && cp -r fluid-openfoam heated_plate_out.e gold/"'
+            prereq = heated_plate_restart/run_reference
         []
         [first]
             type = RunApp
-            prereq = heated_plate_restart/setup
+            prereq = heated_plate_restart/copy_reference
             input = heated_plate.i
             cli_args = '--test-checkpoint-half-transient'
             min_parallel = 4
@@ -19,7 +32,6 @@
             cli_args = '--recover heated_plate_out_cp/LATEST'
             delete_output_before_running = false
             exodiff = heated_plate_out.e
-            gold_dir = '../heated_plate_converge'
             min_parallel=4
             max_parallel=4
         []
@@ -32,6 +44,11 @@
             type = PythonUnitTest
             input = test.py
             prereq = heated_plate_restart/prep_verify
+        []
+        [clean]
+            type = RunCommand
+            command = 'bash -c "rm -rf gold"'
+            prereq = 'heated_plate_restart/verify'
         []
     []
 []
