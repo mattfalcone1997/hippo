@@ -1,8 +1,9 @@
 [Tests]
     [heated_plate_restart]
+        requirement = "Test the cases using fixed-point iteration restart correctly"
         [setup]
             type = RunCommand
-            command = 'bash -c "foamCleanCase -case fluid-openfoam && blockMesh -case fluid-openfoam && decomposePar -case fluid-openfoam"'
+            command = 'bash -c "foamCleanCase -case fluid-openfoam && rm -rf gold && blockMesh -case fluid-openfoam && decomposePar -case fluid-openfoam"'
         []
         [run_reference]
             type = RunApp
