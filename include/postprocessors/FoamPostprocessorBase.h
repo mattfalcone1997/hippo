@@ -1,31 +1,23 @@
 #pragma once
 
+#include "GeneralPostprocessor.h"
 #include "HippoInterface.h"
 #include "fvCFD_moose.h"
 
-#include "InputParameters.h"
-#include "Postprocessor.h"
-#include "ElementUserObject.h"
-
-class FoamPostprocessorBase : public ElementUserObject,
-                              public Postprocessor,
-                              protected HippoInterface
+class FoamPostprocessorBase : public GeneralPostprocessor, protected HippoInterface
 {
 public:
   static InputParameters validParams();
 
   FoamPostprocessorBase(const InputParameters & params);
 
-  // We dont want the usual UserObject functions to be executed
-  // But we still want the Foam Postprocessors to be reported with the other
-  // Foam postprocessors
-  virtual void initialize() final;
+  // We still want the Foam Postprocessors to be reported with the other
+  // postprocessors but we want to define them empty
+  void initialize() final {};
 
-  virtual void execute() final;
+  void execute() final {};
 
-  virtual void finalize() final;
-
-  virtual void threadJoin([[maybe_unused]] const UserObject & uo) final {};
+  void finalize() final {};
 
   // Compute postprocessor, to be called within FoamProblem
   virtual void compute() = 0;

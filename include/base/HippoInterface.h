@@ -2,7 +2,7 @@
 
 #include "InputParameters.h"
 #include "MooseObject.h"
-#include <fvMesh.H>
+#include "fvMesh.H"
 
 class FoamProblem;
 class FoamMesh;
@@ -15,14 +15,22 @@ FoamProblem.
 class HippoInterface
 {
 public:
-  HippoInterface(const MooseObject * moose_object);
+  explicit HippoInterface(const MooseObject * moose_object);
 
 protected:
-  FoamProblem & _foam_problem;
-  FoamMesh & _mesh;
-  Foam::fvMesh & _fv_mesh;
-  Foam::Time & _foam_time;
+  // Retrieves FoamProblem
+  FoamProblem & getFoamProblem() const;
+
+  // Retrieves FoamMesh
+  FoamMesh & getFoamMesh() const;
+
+  // Retrieves Underlying OpenFOAM mesh object
+  Foam::fvMesh & getFvMesh() const;
+
+  // Retrieves OpenFOAM time object
+  Foam::Time & getFoamTime() const;
 
 private:
-  FoamProblem & extractFoamProblem(const MooseObject *);
+  FoamProblem & _foam_problem;
+  static FoamProblem & extractFoamProblem(const MooseObject *);
 };

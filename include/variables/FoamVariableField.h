@@ -1,10 +1,8 @@
 #pragma once
 
-#include "HippoInterface.h"
-#include "MooseObject.h"
-#include "FoamMesh.h"
+#include "HippoObject.h"
 
-class FoamVariableField : public MooseObject, protected HippoInterface
+class FoamVariableField : public HippoObject
 {
 public:
   static InputParameters validParams();

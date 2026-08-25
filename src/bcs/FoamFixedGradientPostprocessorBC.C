@@ -22,12 +22,12 @@ void
 FoamFixedGradientPostprocessorBC::imposeBoundaryCondition()
 {
   // Get subdomains this FoamBC acts on
-  auto subdomains = _mesh.getSubdomainIDs(_boundary);
+  auto subdomains = getFoamMesh().getSubdomainIDs(_boundary);
   for (auto subdomain : subdomains)
   {
     // Get underlying field from OpenFOAM boundary patch.
     auto & foam_gradient =
-        _mesh.getGradientBCField<Foam::volScalarField, double>(subdomain, _foam_variable);
+        getFoamMesh().getGradientBCField<Foam::volScalarField, double>(subdomain, _foam_variable);
 
     // If diffusivity_coefficient is specified grad array is a flux, so result
     // must be divided by it

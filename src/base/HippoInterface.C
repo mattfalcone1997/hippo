@@ -5,11 +5,32 @@
 #include "OutputInterface.h"
 
 HippoInterface::HippoInterface(const MooseObject * moose_object)
-  : _foam_problem(extractFoamProblem(moose_object)),
-    _mesh(_foam_problem.mesh()),
-    _fv_mesh(_mesh.fvMesh()),
-    _foam_time(const_cast<Foam::Time &>(_fv_mesh.time()))
+  : _foam_problem(extractFoamProblem(moose_object))
 {
+}
+
+FoamProblem &
+HippoInterface::getFoamProblem() const
+{
+  return _foam_problem;
+}
+
+FoamMesh &
+HippoInterface::getFoamMesh() const
+{
+  return _foam_problem.mesh();
+}
+
+Foam::fvMesh &
+HippoInterface::getFvMesh() const
+{
+  return getFoamMesh().fvMesh();
+}
+
+Foam::Time &
+HippoInterface::getFoamTime() const
+{
+  return const_cast<Foam::Time &>(getFvMesh().time());
 }
 
 FoamProblem &

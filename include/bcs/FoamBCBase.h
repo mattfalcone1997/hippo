@@ -4,10 +4,9 @@
 
 #include <Coupleable.h>
 #include <InputParameters.h>
-#include <MooseObject.h>
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
-#include "HippoInterface.h"
+#include "HippoObject.h"
 
 typedef std::tuple<std::string, std::string, std::string, std::string, std::string, std::string>
     BCInfoTableRow;
@@ -19,7 +18,7 @@ enum class FoamBCType
   fixedGradient
 };
 
-class FoamBCBase : public MooseObject, public Coupleable, protected HippoInterface
+class FoamBCBase : public HippoObject, public Coupleable
 {
 public:
   static InputParameters validParams();

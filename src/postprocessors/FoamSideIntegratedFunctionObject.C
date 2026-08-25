@@ -26,7 +26,7 @@ FoamSideIntegratedFunctionObject::FoamSideIntegratedFunctionObject(const InputPa
 std::unique_ptr<Foam::functionObject>
 FoamSideIntegratedFunctionObject::createFunctionObject(const std::string & fo_name)
 {
-  auto fo_dict = _foam_time.controlDict().lookupOrDefault(fo_name, Foam::dictionary());
+  auto fo_dict = getFoamTime().controlDict().lookupOrDefault(fo_name, Foam::dictionary());
 
   Foam::wordList patch_names(_boundary.begin(), _boundary.end());
 
@@ -36,12 +36,12 @@ FoamSideIntegratedFunctionObject::createFunctionObject(const std::string & fo_na
   if (fo_name == "wallHeatFlux")
   {
     return std::make_unique<Foam::functionObjects::wallHeatFlux>(
-        "wallHeatFlux", _foam_time, fo_dict);
+        "wallHeatFlux", getFoamTime(), fo_dict);
   }
   else // wallShearStress
   {
     return std::make_unique<Foam::functionObjects::wallShearStress>(
-        "wallShearStress", _foam_time, fo_dict);
+        "wallShearStress", getFoamTime(), fo_dict);
   }
 }
 

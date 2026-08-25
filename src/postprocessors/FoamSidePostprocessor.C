@@ -16,7 +16,7 @@ FoamSidePostprocessor::FoamSidePostprocessor(const InputParameters & params)
 {
   for (auto & boundary : _boundary)
   {
-    if (_fv_mesh.boundary().findIndex(boundary) == -1)
+    if (getFvMesh().boundary().findIndex(boundary) == -1)
       mooseError("Boundary '", boundary, "' not found in FoamMesh.");
   }
 }
