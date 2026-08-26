@@ -20,7 +20,6 @@
 []
 [Problem]
     type = FoamProblem
-    # Take the boundary temperature from OpenFOAM and set it on the MOOSE mesh.
 []
 
 [Executioner]
