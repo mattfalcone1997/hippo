@@ -4,11 +4,9 @@
 
 #include <Coupleable.h>
 #include <InputParameters.h>
-#include <MooseObject.h>
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
-#include <volFieldsFwd.H>
-#include "MooseError.h"
+#include "HippoObject.h"
 
 typedef std::tuple<std::string, std::string, std::string, std::string, std::string, std::string>
     BCInfoTableRow;
@@ -20,7 +18,7 @@ enum class FoamBCType
   fixedGradient
 };
 
-class FoamBCBase : public MooseObject, public Coupleable
+class FoamBCBase : public HippoObject, public Coupleable
 {
 public:
   static InputParameters validParams();
@@ -65,9 +63,6 @@ protected:
 
   // Pointer to Moose variable used to impose BC
   MooseVariableFieldBase * _moose_var;
-
-  // Pointer to the FoamMesh object
-  FoamMesh * _mesh;
 
   // Boundaries that this object applies to
   // TODO: Replace with inherited from BoundaryRestricted once FoamMesh is updated

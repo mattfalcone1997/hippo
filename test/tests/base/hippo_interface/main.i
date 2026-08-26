@@ -4,6 +4,21 @@
     foam_patch = 'left right bottom top back front'
 []
 
+[Kernels]
+    [dummy]
+        type = NullKernel
+        variable = dummy
+    []
+[]
+
+[Postprocessors]
+    [p1]
+        type = FoamSideAverageValue
+        foam_variable=T
+        boundary=left
+    []
+[]
+
 [Variables]
     [dummy]
         family = MONOMIAL
@@ -12,24 +27,14 @@
     []
 []
 
-[FoamVariables]
-    [T_shadow]
-        type = FoamVariableField
-        foam_variable = 'T'
-    []
-[]
 [Problem]
     type = FoamProblem
 []
 
 [Executioner]
     type = Transient
-    end_time = 0.32
-    [TimeSteppers]
-        [foam]
-            type = FoamTimeStepper
-        []
-    []
+    end_time = 0.01
+    dt = 0.01
 []
 
 [Outputs]

@@ -1,7 +1,6 @@
 #include "FoamSideIntegratedBase.h"
 #include "MooseEnum.h"
 #include "MooseTypes.h"
-#include <volFieldsFwd.H>
 
 InputParameters
 FoamSideIntegratedBase::validParams()
@@ -32,21 +31,21 @@ FoamSideIntegratedBase::integrateValue(const std::string & variable)
   // loop over boundary ids
   for (auto & boundary : _boundary)
   {
-    auto & areas = _foam_mesh->boundary()[boundary].magSf();
+    auto & areas = getFvMesh().boundary()[boundary].magSf();
     Foam::Field<double> var_array;
 
-    if (_foam_mesh->foundObject<Foam::volVectorField>(variable))
+    if (getFvMesh().foundObject<Foam::volVectorField>(variable))
     {
       // get vector data associated with the boundary
       auto & vec_data =
-          _foam_mesh->boundary()[boundary].lookupPatchField<Foam::volVectorField, double>(variable);
+          getFvMesh().boundary()[boundary].lookupPatchField<Foam::volVectorField, double>(variable);
 
       // get the component specified in parameters and get the
       // component of the vector in that direction
       auto components = parameters().get<MooseEnum>("component");
       if (components == "normal")
       {
-        auto && normals = _foam_mesh->boundary()[boundary].nf();
+        auto && normals = getFvMesh().boundary()[boundary].nf();
         var_array = normals & vec_data;
       }
       else if (components == "magnitude")
@@ -57,7 +56,7 @@ FoamSideIntegratedBase::integrateValue(const std::string & variable)
     else
     {
       var_array =
-          _foam_mesh->boundary()[boundary].lookupPatchField<Foam::volScalarField, double>(variable);
+          getFvMesh().boundary()[boundary].lookupPatchField<Foam::volScalarField, double>(variable);
     }
 
     // Integrate
@@ -80,7 +79,7 @@ FoamSideIntegratedBase::getArea()
   // loop over boundary ids
   for (auto & boundary : _boundary)
   {
-    auto & areas = _foam_mesh->boundary()[boundary].magSf();
+    auto & areas = getFvMesh().boundary()[boundary].magSf();
     for (int i = 0; i < areas.size(); ++i)
     {
       area += areas[i];

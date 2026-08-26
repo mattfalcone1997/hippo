@@ -10,6 +10,8 @@ public:
 
   FoamSidePostprocessor(const InputParameters & params);
 
+  const std::vector<SubdomainName> & boundary() const { return _boundary; }
+
 protected:
   std::vector<SubdomainName> _boundary;
 };

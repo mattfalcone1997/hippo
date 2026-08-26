@@ -3,6 +3,7 @@
 #include "FoamProblem.h"
 #include "FoamSolver.h"
 #include "hippoUtils.h"
+#include "FoamSidePostprocessor.h"
 
 #include "Attributes.h"
 #include "ExternalProblem.h"
@@ -189,8 +190,8 @@ FoamProblem::verifyFoamPostprocessors()
       theWarehouse().query().condition<AttribInterfaces>(Interfaces::Postprocessor);
   query_uos.queryInto(pps);
 
-  VariadicTable<std::string, std::string, std::string> vt({
-      "Foam postprocessor",
+  VariadicTable<std::string, std::string, std::string> side_vt({
+      "Foam side postprocessor",
       "Type",
       "Boundaries",
   });
@@ -201,9 +202,15 @@ FoamProblem::verifyFoamPostprocessors()
     if (fpp)
     {
       _foam_postprocessor.push_back(fpp);
-      vt.addRow(fpp->name(), fpp->type(), Hippo::internal::listFromVector(fpp->blocks()));
+      // Add side postprocessors to the side table
+      if (auto side_fpp = dynamic_cast<FoamSidePostprocessor *>(fpp))
+      {
+        side_vt.addRow(side_fpp->name(),
+                       side_fpp->type(),
+                       Hippo::internal::listFromVector(side_fpp->boundary()));
+      }
     }
   }
 
-  vt.print(_console);
+  side_vt.print(_console);
 }

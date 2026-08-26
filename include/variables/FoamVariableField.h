@@ -1,9 +1,8 @@
 #pragma once
 
-#include "MooseObject.h"
-#include "FoamMesh.h"
+#include "HippoObject.h"
 
-class FoamVariableField : public MooseObject
+class FoamVariableField : public HippoObject
 {
 public:
   static InputParameters validParams();
@@ -19,7 +18,4 @@ public:
 protected:
   // variable name or functionObject to be shadowed
   std::string _foam_variable;
-
-  // Pointer to the FoamMesh object
-  FoamMesh * _mesh;
 };

@@ -21,7 +21,7 @@ FoamDiffusionFluxPostprocessorBC::FoamDiffusionFluxPostprocessorBC(const InputPa
   : FoamPostprocessorBCBase(params, FoamBCType::fixedGradient),
     _diffusivity(getParam<std::string>("diffusivity"))
 {
-  if (!_mesh->fvMesh().foundObject<Foam::volScalarField>(_diffusivity))
+  if (!getFvMesh().foundObject<Foam::volScalarField>(_diffusivity))
   {
     mooseError("Diffusivity '", _diffusivity, "' not a Foam volScalarField.");
   }
@@ -30,20 +30,18 @@ FoamDiffusionFluxPostprocessorBC::FoamDiffusionFluxPostprocessorBC(const InputPa
 void
 FoamDiffusionFluxPostprocessorBC::imposeBoundaryCondition()
 {
-  auto & foam_mesh = _mesh->fvMesh();
-
   // Get subdomains this FoamBC acts on
-  auto subdomains = _mesh->getSubdomainIDs(_boundary);
+  auto subdomains = getFoamMesh().getSubdomainIDs(_boundary);
   for (auto subdomain : subdomains)
   {
-    const auto & boundary = foam_mesh.boundary()[subdomain];
+    const auto & boundary = getFvMesh().boundary()[subdomain];
     // Get underlying field from OpenFOAM boundary patch.
     auto & foam_gradient =
-        _mesh->getGradientBCField<Foam::volScalarField, double>(subdomain, _foam_variable);
+        getFoamMesh().getGradientBCField<Foam::volScalarField, double>(subdomain, _foam_variable);
 
     // Get the underlying diffusivity field
     const auto & coeff =
-        foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(
+        getFvMesh().boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(
             _diffusivity);
 
     // Calculate the bulk value of the diffusivity coefficient
