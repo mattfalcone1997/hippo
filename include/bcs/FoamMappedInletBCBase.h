@@ -23,6 +23,8 @@ protected:
 
   MPI_Comm _mpi_comm;
 
+  const Foam::meshSearch & _mesh_searcher;
+
   // create send and receive information for mapping
   void createPatchProcMap();
 

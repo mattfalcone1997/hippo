@@ -4,6 +4,7 @@
 #include <MooseTypes.h>
 #include <mpi.h>
 #include <UPstream.H>
+#include <pointInCell.H>
 #include <vectorField.H>
 #include <volFieldsFwd.H>
 #include <Pstream.H>
@@ -145,12 +146,11 @@ FoamMappedInletBCBase::createMapComm(const Foam::fvMesh & mesh,
 void
 FoamMappedInletBCBase::createPatchProcMap()
 {
-  auto & foam_mesh = _mesh->fvMesh();
-  auto & boundary = foam_mesh.boundary()[_boundary[0]];
+  auto & boundary = getFvMesh().boundary()[_boundary[0]];
   auto face_centres = boundary.Cf();
 
   std::vector<int> map_procs, inlet_procs;
-  createMapComm(foam_mesh, face_centres, map_procs, inlet_procs);
+  createMapComm(getFvMesh(), face_centres, map_procs, inlet_procs);
 
   if (_mpi_comm == MPI_COMM_NULL) // process not in mapped or inlet planes
     return;
@@ -248,16 +248,17 @@ FoamMappedInletBCBase::findIndex(const Foam::point & location, const MPI_Comm & 
   Note that it is possible there is some non-deterministic behaviour in the function but this
   shouldn't be a problem in practice.
   */
-  int index = _mesh->fvMesh().findCell(location, Foam::polyMesh::FACE_PLANES);
+  int index = _mesh_searcher.findCell(location, Foam::pointInCellShapes::facePlanes);
   int gl_index;
   MPI_Allreduce(&index, &gl_index, 1, MPI_INT, MPI_MAX, comm);
 
   // expand cell bounding box and repeat search
   if (gl_index < 0)
   {
-    Foam::label celli = _mesh->fvMesh().findNearestCell(location);
+    Foam::label celli = _mesh_searcher.findNearestCell(location);
 
-    bool in_cell = _mesh->fvMesh().pointInCellBB(location, celli, 0.1);
+    bool in_cell =
+        Foam::pointInCell(location, getFvMesh(), celli, Foam::pointInCellShapes::facePlanes);
     index = (in_cell) ? celli : -1;
     MPI_Allreduce(&index, &gl_index, 1, MPI_INT, MPI_MAX, comm);
 
@@ -278,7 +279,7 @@ FoamMappedInletBCBase::findIndex(const Foam::point & location, const MPI_Comm & 
   // use cell with cell centre closest to the location
   Foam::scalar dist{DBL_MAX}, gl_dist;
   if (index != -1)
-    dist = Foam::mag(_mesh->fvMesh().cellCentres()[index] - location);
+    dist = Foam::mag(getFvMesh().cellCentres()[index] - location);
 
   MPI_Allreduce(&dist, &gl_dist, 1, MPI_DOUBLE, MPI_MIN, comm);
   if (dist != gl_dist)
@@ -290,7 +291,7 @@ FoamMappedInletBCBase::findIndex(const Foam::point & location, const MPI_Comm & 
   if (in_cell > 1)
   {
     if (index != -1)
-      dist = Foam::mag(_mesh->fvMesh().cellCentres()[index] - (location - _offset));
+      dist = Foam::mag(getFvMesh().cellCentres()[index] - (location - _offset));
     MPI_Allreduce(&dist, &gl_dist, 1, MPI_DOUBLE, MPI_MIN, comm);
     if (dist != gl_dist)
       index = -1;
@@ -320,12 +321,13 @@ FoamMappedInletBCBase::validParams()
 }
 
 FoamMappedInletBCBase::FoamMappedInletBCBase(const InputParameters & params)
-  : FoamPostprocessorBCBase(params),
+  : FoamPostprocessorBCBase(params, FoamBCType::fixedValue),
     _offset(),
     _send_map(),
     _recv_map(),
     _foam_comm(0),
-    _mpi_comm(MPI_COMM_NULL)
+    _mpi_comm(MPI_COMM_NULL),
+    _mesh_searcher(Foam::meshSearch::New(getFvMesh()))
 {
   if (_boundary.size() > 1)
     mooseError("There can only be one boundary using this method");
@@ -344,14 +346,13 @@ FoamMappedInletBCBase::getMappedArray(const Foam::word & name)
   if (_mpi_comm == MPI_COMM_NULL)
     return Foam::Field<T>();
 
-  auto & foam_mesh = _mesh->fvMesh();
-  auto & boundary_patch = foam_mesh.boundary()[_boundary[0]];
+  auto & boundary_patch = getFvMesh().boundary()[_boundary[0]];
 
   Foam::PstreamBuffers sendBuf(
       Foam::UPstream::commsTypes::nonBlocking, Foam::UPstream::msgType(), _foam_comm);
   if (_send_map.size() > 0)
   {
-    auto & var = foam_mesh.lookupObject<Foam::VolField<T>>(name);
+    auto & var = getFvMesh().lookupObject<Foam::VolField<T>>(name);
     for (auto & pair : _send_map)
     {
       auto & proc = pair.first;

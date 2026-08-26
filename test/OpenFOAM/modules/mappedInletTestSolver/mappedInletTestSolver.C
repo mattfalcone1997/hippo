@@ -23,7 +23,6 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "dimensionSets.H"
 #include "dimensionedScalar.H"
 #include "dimensionedVector.H"
 #include "fvMesh.H"
@@ -48,29 +47,11 @@ addToRunTimeSelectionTable(solver, mappedInletTestSolver, fvMesh);
 
 // * * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * //
 
-bool
-Foam::solvers::mappedInletTestSolver::dependenciesModified() const
-{
-  return runTime.controlDict().modified();
-}
-
-bool
-Foam::solvers::mappedInletTestSolver::read()
-{
-  solver::read();
-
-  maxDeltaT_ = runTime.controlDict().found("maxDeltaT")
-                   ? runTime.controlDict().lookup<scalar>("maxDeltaT", runTime.userUnits())
-                   : vGreat;
-
-  return true;
-}
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 // Solver based on solid.C module
 Foam::solvers::mappedInletTestSolver::mappedInletTestSolver(fvMesh & mesh,
                                                             autoPtr<solidThermo> thermoPtr)
-  : solver(mesh),
+  : baseTestSolver(mesh),
 
     thermoPtr_(thermoPtr),
     thermo_(thermoPtr_()),
@@ -94,17 +75,7 @@ Foam::solvers::mappedInletTestSolver::mappedInletTestSolver(fvMesh & mesh)
   read();
 }
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::solvers::mappedInletTestSolver::~mappedInletTestSolver() {}
-
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
-
-Foam::scalar
-Foam::solvers::mappedInletTestSolver::maxDeltaT() const
-{
-  return min(fvModels().maxDeltaT(), maxDeltaT_);
-}
 
 void
 Foam::solvers::mappedInletTestSolver::preSolve()
@@ -114,32 +85,6 @@ Foam::solvers::mappedInletTestSolver::preSolve()
   // Update the mesh for topology change, mesh to mesh mapping
   mesh_.update();
 }
-
-void
-Foam::solvers::mappedInletTestSolver::moveMesh()
-{
-  if (pimple.firstIter() || pimple.moveMeshOuterCorrectors())
-  {
-    if (!mesh_.mover().solidBody())
-    {
-      FatalErrorInFunction << "Region " << name() << " of type " << type()
-                           << " does not support non-solid body mesh motion" << exit(FatalError);
-    }
-
-    mesh_.move();
-  }
-}
-
-void
-Foam::solvers::mappedInletTestSolver::motionCorrector()
-{
-}
-
-void
-Foam::solvers::mappedInletTestSolver::prePredictor()
-{
-}
-
 void
 Foam::solvers::mappedInletTestSolver::momentumPredictor()
 {
@@ -163,21 +108,6 @@ Foam::solvers::mappedInletTestSolver::thermophysicalPredictor()
   auto & coords = mesh.C().primitiveField();
   e.primitiveFieldRef() = mag(coords) + mesh.time().userTimeValue();
   thermo_.correct();
-}
-
-void
-Foam::solvers::mappedInletTestSolver::pressureCorrector()
-{
-}
-
-void
-Foam::solvers::mappedInletTestSolver::postCorrector()
-{
-}
-
-void
-Foam::solvers::mappedInletTestSolver::postSolve()
-{
 }
 
 // ************************************************************************* //

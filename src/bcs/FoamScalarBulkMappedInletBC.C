@@ -32,8 +32,7 @@ FoamScalarBulkMappedInletBC::FoamScalarBulkMappedInletBC(const InputParameters &
 void
 FoamScalarBulkMappedInletBC::imposeBoundaryCondition()
 {
-  auto & foam_mesh = _mesh->fvMesh();
-  auto & boundary_patch = foam_mesh.boundary()[_boundary[0]];
+  auto & boundary_patch = getFvMesh().boundary()[_boundary[0]];
 
   auto && var_map = getMappedArray<Foam::scalar>(_foam_variable);
   auto & Sf = boundary_patch.magSf();

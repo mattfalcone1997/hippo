@@ -13,7 +13,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-solver          mappedInletTestSolver;
+solver          mappedInletTest;
 
 startFrom       startTime;
 

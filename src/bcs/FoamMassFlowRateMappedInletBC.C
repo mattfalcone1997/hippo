@@ -39,8 +39,7 @@ FoamMassFlowRateMappedInletBC::FoamMassFlowRateMappedInletBC(const InputParamete
 void
 FoamMassFlowRateMappedInletBC::imposeBoundaryCondition()
 {
-  auto & foam_mesh = _mesh->fvMesh();
-  auto & boundary_patch = foam_mesh.boundary()[_boundary[0]];
+  auto & boundary_patch = getFvMesh().boundary()[_boundary[0]];
 
   // currently we map mass flux rather than velocity, maybe useful to have option
   auto && U_map = getMappedArray<Foam::vector>("U");
