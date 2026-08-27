@@ -12,7 +12,7 @@ public:
 
   FoamMappedInletBCBase(const InputParameters & params);
 
-  virtual ~FoamMappedInletBCBase() { destroyCommunicator(_foam_comm); }
+  ~FoamMappedInletBCBase() override { destroyCommunicator(_foam_comm); }
 
 protected:
   Foam::vector _offset;
@@ -41,8 +41,8 @@ private:
   // create/assign communicators for the transfers between map and inlet planes
   void createMapComm(const Foam::fvMesh & mesh,
                      const Foam::vectorField & face_centres,
-                     std::vector<int> & send_process,
-                     std::vector<int> & recv_process,
+                     std::vector<int> & map_processes,
+                     std::vector<int> & inlet_processes,
                      MPI_Comm comm);
 
   // find indices of cells containing mapped inlet points or raise error if not found
