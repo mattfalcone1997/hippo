@@ -2,6 +2,8 @@
 
 #include "FoamPostprocessorBCBase.h"
 #include <UPstream.H>
+#include <pointFieldsFwd.H>
+#include <vector>
 
 class FoamMappedInletBCBase : public FoamPostprocessorBCBase
 {
@@ -37,12 +39,13 @@ protected:
 
   // create/assign communicators for the transfers between map and inlet planes
   void createMapComm(const Foam::fvMesh & mesh,
-                     Foam::vectorField face_centres,
+                     const Foam::vectorField & face_centres,
                      std::vector<int> & send_process,
-                     std::vector<int> & recv_process);
+                     std::vector<int> & recv_process,
+                     const MPI_Comm & comm);
 
-  // find index of cell containing point or raise error if not found
-  int findIndex(const Foam::point & location, const MPI_Comm & comm);
+  // find indices of cells containing mapped inlet points or raise error if not found
+  std::vector<int> findIndices(const Foam::pointField & locations, const MPI_Comm & comm);
 
   // handle creation of new communicators in parallel or serial
   Foam::label
@@ -58,7 +61,7 @@ protected:
     else
     {
       foam_comm = Foam::UPstream::worldComm;
-      new_comm = MPI_COMM_WORLD;
+      new_comm = Foam::PstreamGlobals::MPICommunicators_[Foam::UPstream::worldComm];
     }
     return foam_comm;
   }

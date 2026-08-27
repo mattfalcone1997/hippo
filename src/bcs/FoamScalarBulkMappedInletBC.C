@@ -1,11 +1,13 @@
 #include "FoamScalarBulkMappedInletBC.h"
 #include "InputParameters.h"
+#include "MooseError.h"
 #include "MooseTypes.h"
 #include "PstreamReduceOps.H"
 #include "Registry.h"
 
 #include "ops.H"
 #include "volFieldsFwd.H"
+#include <scalar.H>
 
 registerMooseObject("hippoApp", FoamScalarBulkMappedInletBC);
 
@@ -56,6 +58,9 @@ FoamScalarBulkMappedInletBC::applyScaleMethod(T & var, const Real bulk_ref, cons
 {
   if (_scale_method == "SCALE")
   {
+    if (std::abs(bulk) < Foam::SMALL)
+      mooseError("Cannot scale mapped inlet field '", _foam_variable, "', bulk value is 0.");
+
     return (var * bulk_ref / bulk)();
   }
   else if (_scale_method == "SUBTRACT")

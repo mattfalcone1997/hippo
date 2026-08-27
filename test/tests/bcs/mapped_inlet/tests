@@ -4,7 +4,7 @@
             type = RunCommand
             command = 'bash -c "foamCleanCase -case foam && blockMesh -case foam && decomposePar -case foam"'
         []
-        [run_err]
+        [run_err1]
             type = RunException
             input = main.i
             prereq = mapped_mass_flow_receiver/setup
@@ -12,7 +12,17 @@
             min_parallel = 5
             max_parallel = 5
             cli_args = "FoamBCs/mass_flowx/translation_vector='-0.5 0 0'"
-            expect_err = "does not have a mapped plane location"
+            expect_err = "Mapped inlet invalid. No intersection of mapped plane and mesh."
+        []
+        [run_err2]
+            type = RunException
+            input = main.i
+            prereq = mapped_mass_flow_receiver/setup
+            allow_warnings = true
+            min_parallel = 5
+            max_parallel = 5
+            cli_args = "FoamBCs/mass_flowx/translation_vector='1 0.5 0'"
+            expect_err = "Locations not found:"
         []
         [run]
             type = RunApp
