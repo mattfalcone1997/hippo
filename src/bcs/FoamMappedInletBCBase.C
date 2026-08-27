@@ -1,18 +1,17 @@
 #include "FoamMappedInletBCBase.h"
-#include "MooseError.h"
 
 #include <InputParameters.h>
 #include <MooseTypes.h>
+
 #include <mpi.h>
 #include <UPstream.H>
 #include <pointInCell.H>
-#include <quaternion.H>
-#include <sstream>
-#include <vector>
 #include <vectorField.H>
 #include <volFieldsFwd.H>
 #include <Pstream.H>
 
+#include <vector>
+#include <sstream>
 #include <algorithm>
 #include <cassert>
 #include <limits>
@@ -21,7 +20,7 @@ namespace
 {
 // Get the cartesian bounding box of the mapped inlet plane
 void
-getBBox(const Foam::vectorField & points, Real bbox[6], const MPI_Comm & comm)
+getBBox(const Foam::vectorField & points, Real bbox[6], MPI_Comm comm)
 {
   bbox[0] = std::numeric_limits<Real>::max();
   bbox[1] = std::numeric_limits<Real>::lowest();
@@ -47,14 +46,14 @@ getBBox(const Foam::vectorField & points, Real bbox[6], const MPI_Comm & comm)
   MPI_Allreduce(MPI_IN_PLACE, &bbox[5], 1, MPI_DOUBLE, MPI_MAX, comm);
 }
 
-enum class FindError
+enum class LocatorIssue
 {
   NOT_FOUND,
   MANY_FOUND
 };
 
 std::vector<int>
-findLocationErrors(const std::vector<int> & indices, const MPI_Comm & comm, FindError issue)
+findLocatorIssues(const std::vector<int> & indices, MPI_Comm comm, LocatorIssue issue)
 {
   std::vector<int> found(indices.size(), 0);
   std::vector<int> gl_found(indices.size(), 0);
@@ -65,16 +64,45 @@ findLocationErrors(const std::vector<int> & indices, const MPI_Comm & comm, Find
   }
   MPI_Allreduce(found.data(), gl_found.data(), found.size(), MPI_INT, MPI_SUM, comm);
 
-  std::vector<int> deconflict_points;
+  std::vector<int> conflict_indices;
   for (auto i = 0lu; i < indices.size(); ++i)
   {
-    if (issue == FindError::MANY_FOUND && gl_found[i] > 1)
-      deconflict_points.push_back(i);
-    else if (issue == FindError::NOT_FOUND && gl_found[i] == 0)
-      deconflict_points.push_back((i));
+    if (issue == LocatorIssue::MANY_FOUND && gl_found[i] > 1)
+      conflict_indices.push_back(i);
+    else if (issue == LocatorIssue::NOT_FOUND && gl_found[i] == 0)
+      conflict_indices.push_back(i);
   }
 
-  return deconflict_points;
+  return conflict_indices;
+}
+
+void
+retainClosestCells(std::vector<int> & indices,
+                   const std::vector<int> & conflict_indices,
+                   const Foam::pointField & target_locations,
+                   const Foam::vectorField & cell_centres,
+                   MPI_Comm comm)
+{
+  std::vector<Real> local_distances(conflict_indices.size(), std::numeric_limits<Real>::max());
+  std::vector<Real> minimum_distances(conflict_indices.size());
+
+  for (auto i = 0lu; i < conflict_indices.size(); ++i)
+  {
+    const int idx = conflict_indices[i];
+    if (indices[idx] >= 0)
+      local_distances[i] = Foam::mag(target_locations[idx] - cell_centres[indices[idx]]);
+  }
+
+  MPI_Allreduce(local_distances.data(),
+                minimum_distances.data(),
+                conflict_indices.size(),
+                MPI_DOUBLE,
+                MPI_MIN,
+                comm);
+
+  for (auto i = 0lu; i < conflict_indices.size(); ++i)
+    if (local_distances[i] != minimum_distances[i])
+      indices[conflict_indices[i]] = -1;
 }
 }
 
@@ -117,14 +145,14 @@ FoamMappedInletBCBase::createMapComm(const Foam::fvMesh & mesh,
                                      const Foam::vectorField & face_centres,
                                      std::vector<int> & map_process,
                                      std::vector<int> & inlet_process,
-                                     const MPI_Comm & comm)
+                                     MPI_Comm comm)
 {
   Real cart_bbox[6];
   auto mapped_plane = face_centres + _offset;
   getBBox(mapped_plane(), cart_bbox, comm);
 
   int mappedPlaneProcess = intersectMapPlane(mesh, cart_bbox);
-  int inletPlaneProcess = face_centres.size() > 0;
+  int inletPlaneProcess = !face_centres.empty();
 
   std::vector<int> inlet_procs(Foam::UPstream::nProcs());
   std::vector<int> map_procs(Foam::UPstream::nProcs());
@@ -165,7 +193,7 @@ FoamMappedInletBCBase::createPatchProcMap()
   createMapComm(getFvMesh(), face_centres, map_procs, inlet_procs, comm);
 
   if (map_procs.empty())
-    mooseError("Mapped inlet invalid. No intersection of mapped plane and mesh.");
+    mooseError("The mapped inlet plane does not intersect the mesh.");
 
   if (_mpi_comm == MPI_COMM_NULL) // process not in mapped or inlet planes
     return;
@@ -199,8 +227,8 @@ FoamMappedInletBCBase::createPatchProcMap()
     for (auto i = 0lu; i < inlet_procs.size(); ++i)
     {
       Foam::vectorField field;
-      Foam::UIPstream recieve(inlet_procs[i], send_points);
-      recieve >> field;
+      Foam::UIPstream receive(inlet_procs[i], send_points);
+      receive >> field;
       auto & vec = _send_map[inlet_procs[i]];
       auto & recv_indices = recv_indices_procs[i];
       auto indices = findIndices(field + _offset, map_comm);
@@ -213,7 +241,7 @@ FoamMappedInletBCBase::createPatchProcMap()
           recv_indices.push_back(j);
         }
       }
-      if (vec.size() == 0)
+      if (vec.empty())
         _send_map.erase(inlet_procs[i]);
 
       // Let original processes know which points will come from each rank
@@ -273,7 +301,7 @@ FoamMappedInletBCBase::createPatchProcMap()
 }
 
 std::vector<int>
-FoamMappedInletBCBase::findIndices(const Foam::pointField & locations, const MPI_Comm & comm)
+FoamMappedInletBCBase::findIndices(const Foam::pointField & locations, MPI_Comm comm)
 {
   std::vector<int> indices(locations.size(), -1);
   for (auto i = 0; i < locations.size(); ++i)
@@ -281,21 +309,21 @@ FoamMappedInletBCBase::findIndices(const Foam::pointField & locations, const MPI
     indices[i] = _mesh_searcher.findCell(locations[i], Foam::pointInCellShapes::facePlanes);
   }
 
-  auto bad_indices = findLocationErrors(indices, comm, FindError::NOT_FOUND);
-  for (auto i = 0lu; i < bad_indices.size(); ++i)
+  auto missing_indices = findLocatorIssues(indices, comm, LocatorIssue::NOT_FOUND);
+  for (auto i = 0lu; i < missing_indices.size(); ++i)
   {
-    int celli = _mesh_searcher.findNearestCell(locations[bad_indices[i]]);
+    int celli = _mesh_searcher.findNearestCell(locations[missing_indices[i]]);
     bool in_cell = Foam::pointInCell(
-        locations[bad_indices[i]], getFvMesh(), celli, Foam::pointInCellShapes::facePlanes);
-    indices[bad_indices[i]] = (in_cell) ? celli : -1;
+        locations[missing_indices[i]], getFvMesh(), celli, Foam::pointInCellShapes::facePlanes);
+    indices[missing_indices[i]] = (in_cell) ? celli : -1;
   }
 
   // Check not founds
-  std::vector<int> notfound_points = findLocationErrors(indices, comm, FindError::NOT_FOUND);
-  if (notfound_points.size() > 0)
+  std::vector<int> notfound_indices = findLocatorIssues(indices, comm, LocatorIssue::NOT_FOUND);
+  if (!notfound_indices.empty())
   {
     std::stringstream err_msg;
-    for (auto idx : notfound_points)
+    for (auto idx : notfound_indices)
     {
       const auto & loc = locations[idx];
       err_msg << "\t(" << loc.x() << ", " << loc.y() << ", " << loc.z() << ")\n";
@@ -303,64 +331,28 @@ FoamMappedInletBCBase::findIndices(const Foam::pointField & locations, const MPI
     mooseError("Locations not found:\n", err_msg.str());
   }
 
-  // Deduplication
-  // check if deduplication is required
-  auto deconflict_points = findLocationErrors(indices, comm, FindError::MANY_FOUND);
-  if (deconflict_points.empty())
+  // Resolve locations claimed by multiple ranks
+  auto conflict_indices = findLocatorIssues(indices, comm, LocatorIssue::MANY_FOUND);
+  if (conflict_indices.empty())
     return indices;
 
-  // deconflict step 1
-  // Use cell centre closest to location
-  std::vector<Real> dist(deconflict_points.size(), std::numeric_limits<Real>::max());
-  std::vector<Real> gl_dist(deconflict_points.size(), std::numeric_limits<Real>::max());
-
-  for (auto i = 0lu; i < deconflict_points.size(); ++i)
-  {
-    int idx = deconflict_points[i];
-
-    if (indices[idx] != -1)
-      dist[i] = Foam::mag(locations[idx] - getFvMesh().cellCentres()[indices[idx]]);
-  }
-
-  MPI_Allreduce(dist.data(), gl_dist.data(), deconflict_points.size(), MPI_DOUBLE, MPI_MIN, comm);
-
-  for (auto i = 0lu; i < deconflict_points.size(); ++i)
-  {
-    int idx = deconflict_points[i];
-    if (dist[i] != gl_dist[i])
-      indices[idx] = -1;
-  }
+  // Prefer the cell whose centre is closest to the mapped location.
+  retainClosestCells(indices, conflict_indices, locations, getFvMesh().cellCentres(), comm);
 
   // Check again for conflicts
-  deconflict_points = findLocationErrors(indices, comm, FindError::MANY_FOUND);
-  if (deconflict_points.empty())
+  conflict_indices = findLocatorIssues(indices, comm, LocatorIssue::MANY_FOUND);
+  if (conflict_indices.empty())
     return indices;
 
-  // 2. Choose which ever is closest to the inlet
-  dist.assign(deconflict_points.size(), std::numeric_limits<Real>::max());
-  gl_dist.assign(deconflict_points.size(), std::numeric_limits<Real>::max());
-  for (auto i = 0lu; i < deconflict_points.size(); ++i)
-  {
-    int idx = deconflict_points[i];
+  // Break remaining ties using the distance to the original inlet location.
+  const Foam::pointField inlet_locations = locations - _offset;
+  retainClosestCells(indices, conflict_indices, inlet_locations, getFvMesh().cellCentres(), comm);
 
-    if (indices[idx] != -1)
-      dist[i] = Foam::mag(getFvMesh().cellCentres()[indices[idx]] - (locations[idx] - _offset));
-  }
-
-  MPI_Allreduce(dist.data(), gl_dist.data(), deconflict_points.size(), MPI_DOUBLE, MPI_MIN, comm);
-
-  for (auto i = 0lu; i < deconflict_points.size(); ++i)
-  {
-    int idx = deconflict_points[i];
-    if (dist[i] != gl_dist[i])
-      indices[idx] = -1;
-  }
-
-  deconflict_points = findLocationErrors(indices, comm, FindError::MANY_FOUND);
-  if (!deconflict_points.empty())
+  conflict_indices = findLocatorIssues(indices, comm, LocatorIssue::MANY_FOUND);
+  if (!conflict_indices.empty())
   {
     std::stringstream err_msg;
-    for (auto idx : deconflict_points)
+    for (auto idx : conflict_indices)
     {
       const auto & loc = locations[idx];
       err_msg << "\t(" << loc.x() << ", " << loc.y() << ", " << loc.z() << ")\n";
@@ -411,7 +403,7 @@ FoamMappedInletBCBase::getMappedArray(const Foam::word & name)
 
   Foam::PstreamBuffers sendBuf(
       Foam::UPstream::commsTypes::nonBlocking, Foam::UPstream::msgType(), _foam_comm);
-  if (_send_map.size() > 0)
+  if (!_send_map.empty())
   {
     auto & var = getFvMesh().lookupObject<Foam::VolField<T>>(name);
     for (auto & pair : _send_map)
@@ -430,7 +422,7 @@ FoamMappedInletBCBase::getMappedArray(const Foam::word & name)
   sendBuf.finishedSends(true);
 
   Foam::Field<T> boundaryData(boundary_patch.size());
-  if (_recv_map.size() > 0)
+  if (!_recv_map.empty())
   {
     for (auto & pair : _recv_map)
     {
@@ -448,4 +440,31 @@ FoamMappedInletBCBase::getMappedArray(const Foam::word & name)
   }
 
   return boundaryData;
+}
+
+Foam::label
+FoamMappedInletBCBase::createCommunicator(const Foam::label parent_comm,
+                                          const std::vector<int> & procs,
+                                          MPI_Comm & new_comm)
+{
+  Foam::label foam_comm;
+  if (Foam::UPstream::parRun())
+  {
+    Foam::labelList foam_procs(procs.begin(), procs.end());
+    foam_comm = Foam::UPstream::allocateCommunicator(parent_comm, foam_procs, true);
+    new_comm = Foam::PstreamGlobals::MPICommunicators_[foam_comm];
+  }
+  else
+  {
+    foam_comm = Foam::UPstream::worldComm;
+    new_comm = Foam::PstreamGlobals::MPICommunicators_[Foam::UPstream::worldComm];
+  }
+  return foam_comm;
+}
+
+void
+FoamMappedInletBCBase::destroyCommunicator(Foam::label comm)
+{
+  if (Foam::UPstream::parRun())
+    Foam::UPstream::freeCommunicator(comm);
 }

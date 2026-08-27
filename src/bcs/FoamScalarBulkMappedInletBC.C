@@ -1,13 +1,15 @@
 #include "FoamScalarBulkMappedInletBC.h"
 #include "InputParameters.h"
-#include "MooseError.h"
 #include "MooseTypes.h"
-#include "PstreamReduceOps.H"
 #include "Registry.h"
 
+#include "PstreamReduceOps.H"
 #include "ops.H"
 #include "volFieldsFwd.H"
+#include <label.H>
 #include <scalar.H>
+
+#include <cmath>
 
 registerMooseObject("hippoApp", FoamScalarBulkMappedInletBC);
 
