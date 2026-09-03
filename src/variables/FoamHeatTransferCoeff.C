@@ -29,8 +29,7 @@ FoamHeatTransferCoeff::validParams()
 
 FoamHeatTransferCoeff::FoamHeatTransferCoeff(const InputParameters & params)
   : FoamFieldBase(params),
-    _mesh(getFoamProblem().mesh()),
-    _subdomain(_mesh.getSubdomainID(getParam<SubdomainName>("boundary"))),
+    _subdomain(getFoamMesh().getSubdomainID(getParam<SubdomainName>("boundary"))),
     _t_bulk_uo_name(getParam<UserObjectName>("bulk_temperature_uo"))
 {
 }
@@ -42,7 +41,7 @@ FoamHeatTransferCoeff::transferVariable()
   auto & moose_var = getFoamProblem().getVariable(tid, _name);
 
   const Foam::scalarField htc = calculateHTC();
-  Hippo::internal::copyFieldFoamToMoose(_mesh, htc, moose_var, _subdomain);
+  Hippo::internal::copyFieldFoamToMoose(getFoamMesh(), htc, moose_var, _subdomain);
   moose_var.sys().solution().close();
 }
 
@@ -51,16 +50,15 @@ FoamHeatTransferCoeff::calculateHTC()
 {
   const std::string & subdomain{getParam<SubdomainName>("boundary")};
   const std::string & Tname{getParam<std::string>("T_name")};
-  const Foam::fvMesh & foam_mesh{_mesh.fvMesh()};
 
   const auto & Tbf =
-      foam_mesh.boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(Tname);
+      getFvMesh().boundary()[subdomain].lookupPatchField<Foam::volScalarField, double>(Tname);
   const Foam::scalarField q = calculate_qw(Tbf);
 
   UserObject & t_bulk_uo = getFoamProblem().getUserObject<UserObject>(_t_bulk_uo_name);
   t_bulk_uo.execute();
   Foam::scalarField htc{Tbf.size(), 0};
-  const Foam::vectorField & cellCenters{foam_mesh.boundary()[subdomain].Cf()};
+  const Foam::vectorField & cellCenters{getFvMesh().boundary()[subdomain].Cf()};
   const Foam::scalar eps = Foam::ROOTVSMALL;
   for (int i = 0; i < htc.size(); ++i)
   {
@@ -75,10 +73,9 @@ FoamHeatTransferCoeff::calculateHTC()
 const Foam::Field<Foam::scalar>
 FoamHeatTransferCoeff::calculate_qw(const Foam::fvPatchScalarField & Tbf)
 {
-  const auto & foam_mesh{_mesh.fvMesh()};
   Foam::Field<Foam::scalar> q_w(Tbf.size(), 0.);
   const Foam::thermophysicalTransportModel & ttm =
-      foam_mesh.lookupType<Foam::thermophysicalTransportModel>();
+      getFvMesh().lookupType<Foam::thermophysicalTransportModel>();
 
   // use kappaEff as this would also account for turbulence modelling while being the same as
   // molecular in other cases
