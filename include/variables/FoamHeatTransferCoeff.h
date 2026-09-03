@@ -26,7 +26,6 @@ protected:
   Foam::scalarField calculateHTC();
   const Foam::scalarField calculate_qw(const Foam::fvPatchScalarField & Tbf);
   // Pointer to the FoamMesh object
-  FoamMesh & _mesh;
   const SubdomainID _subdomain;
   const UserObjectName & _t_bulk_uo_name;
 };
