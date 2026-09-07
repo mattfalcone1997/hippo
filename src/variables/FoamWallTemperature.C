@@ -14,7 +14,7 @@ FoamWallTemperature::FoamWallTemperature(const InputParameters & params)
 }
 
 const Foam::scalarField
-FoamWallTemperature::getFoamField()
+FoamWallTemperature::getFoamField(const SubdomainName & boundary)
 {
-  return _wall_quantities->wallTemperature();
+  return _wall_quantities->wallTemperature(boundary);
 }

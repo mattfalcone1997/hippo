@@ -16,8 +16,7 @@ WallQuantitiesFluid::validParams()
 }
 
 WallQuantitiesFluid::WallQuantitiesFluid(const InputParameters & params)
-  : WallQuantitiesBase(params),
-    _boundary_temp(_patch.lookupPatchField<Foam::volScalarField, double>(getTFieldName()))
+  : WallQuantitiesBase(params)
 {
 }
 
@@ -31,22 +30,28 @@ WallQuantitiesFluid::getTFieldName()
 }
 
 Foam::scalarField
-WallQuantitiesFluid::wallTemperature()
+WallQuantitiesFluid::wallTemperature(const SubdomainName & boundary)
 {
-  return _boundary_temp.primitiveField();
+  auto & boundary_temp =
+      getFoamPatch(boundary).lookupPatchField<Foam::volScalarField, double>(getTFieldName());
+  return boundary_temp.primitiveField();
 }
 
 Foam::scalarField
-WallQuantitiesFluid::wallHeatFlux()
+WallQuantitiesFluid::wallHeatFlux(const SubdomainName & boundary)
 {
-  Foam::Field<Foam::scalar> q_w(_patch.size(), 0.);
+  auto & patch = getFoamPatch(boundary);
+  auto & boundary_temp =
+      getFoamPatch(boundary).lookupPatchField<Foam::volScalarField, double>(getTFieldName());
+
+  Foam::Field<Foam::scalar> q_w(patch.size(), 0.);
   const Foam::thermophysicalTransportModel & ttm =
       getFvMesh().lookupType<Foam::thermophysicalTransportModel>();
 
   // use kappaEff as this would also account for turbulence modelling while being the same as
   // molecular in other cases
-  const auto & kappaEffbf = ttm.kappaEff(_patch.index());
-  q_w = kappaEffbf * _boundary_temp.snGrad();
+  const auto & kappaEffbf = ttm.kappaEff(patch.index());
+  q_w = kappaEffbf * boundary_temp.snGrad();
 
   return q_w;
 }

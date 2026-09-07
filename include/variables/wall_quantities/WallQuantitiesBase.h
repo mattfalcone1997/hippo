@@ -14,10 +14,11 @@ class WallQuantitiesBase : protected HippoObject
 public:
   static InputParameters validParams();
   explicit WallQuantitiesBase(const InputParameters & params);
-  virtual Foam::scalarField wallTemperature() = 0;
-  virtual Foam::scalarField wallHeatFlux() = 0;
-  virtual Foam::scalarField heatTransferCoefficient(UserObject & t_bulk_uo);
+  virtual Foam::scalarField wallTemperature(const SubdomainName & boundary) = 0;
+  virtual Foam::scalarField wallHeatFlux(const SubdomainName & boundary) = 0;
+  virtual Foam::scalarField heatTransferCoefficient(const SubdomainName & boundary,
+                                                    UserObject & t_bulk_uo);
 
 protected:
-  const Foam::fvPatch & _patch;
+  const Foam::fvPatch & getFoamPatch(const SubdomainName & boundary);
 };
