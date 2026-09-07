@@ -18,5 +18,5 @@ public:
 protected:
   std::unique_ptr<WallQuantitiesBase> _wall_quantities;
   std::unique_ptr<WallQuantitiesBase> createWallQuantities();
-  virtual const Foam::scalarField getFoamField() = 0;
+  virtual const Foam::scalarField getFoamField(const SubdomainName & boundary) = 0;
 };

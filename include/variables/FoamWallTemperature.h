@@ -15,5 +15,5 @@ public:
   FoamWallTemperature(const InputParameters & params);
 
 protected:
-  virtual const Foam::scalarField getFoamField() override;
+  virtual const Foam::scalarField getFoamField(const SubdomainName & boundary) override;
 };

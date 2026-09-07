@@ -15,7 +15,7 @@ FoamWallVariableBase::validParams()
   MooseEnum wall_quantity("FLUID MULTIPHASE_EULER", "FLUID");
   params.addParam<MooseEnum>(
       "wall_quantity", wall_quantity, "Wall quantity based on fluid solver type");
-  params.addRequiredParam<SubdomainName>("boundary", "Boundary this object mirrors.");
+  params.addRequiredParam<std::vector<SubdomainName>>("boundary", "Boundary this object mirrors.");
   return params;
 }
 
@@ -32,13 +32,11 @@ FoamWallVariableBase::createWallQuantities()
   if (wall_quantity == "FLUID")
   {
     auto params = WallQuantitiesFluid::validParams();
-    params.transferParam<SubdomainName>(parameters(), "boundary");
     return std::make_unique<WallQuantitiesFluid>(params);
   }
   else if (wall_quantity == "MULTIPHASE_EULER")
   {
     auto params = WallQuantitiesMultiphaseEuler::validParams();
-    params.transferParam<SubdomainName>(parameters(), "boundary");
     return std::make_unique<WallQuantitiesMultiphaseEuler>(params);
   }
 
@@ -51,13 +49,13 @@ FoamWallVariableBase::transferVariable()
   THREAD_ID tid = getParam<THREAD_ID>("_tid");
   auto & moose_var = getFoamProblem().getVariable(tid, _name);
 
-  const Foam::scalarField T_wall = _wall_quantities->wallTemperature();
+  const auto & subdomains{getParam<std::vector<SubdomainName>>("boundary")};
 
-  Hippo::internal::copyFieldFoamToMoose(
-      getFoamMesh(),
-      getFoamField(),
-      moose_var,
-      getFoamMesh().getSubdomainID(getParam<SubdomainName>("boundary")));
+  for (const auto & subdomain : subdomains)
+  {
+    Hippo::internal::copyFieldFoamToMoose(
+        getFoamMesh(), getFoamField(subdomain), moose_var, getFoamMesh().getSubdomainID(subdomain));
+  }
 
   moose_var.sys().solution().close();
 }

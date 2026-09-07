@@ -11,8 +11,6 @@
 #include <string>
 #include <volFieldsFwd.H>
 
-#include "fluidThermophysicalTransportModel.H"
-
 registerMooseObject("hippoApp", FoamHeatTransferCoeff);
 
 InputParameters
@@ -27,11 +25,13 @@ FoamHeatTransferCoeff::validParams()
 FoamHeatTransferCoeff::FoamHeatTransferCoeff(const InputParameters & params)
   : FoamWallVariableBase(params), _t_bulk_uo_name(getParam<UserObjectName>("bulk_temperature_uo"))
 {
+  if (getParam<std::vector<SubdomainName>>("boundary").size() > 1)
+    mooseError("For FoamHeatTransferCoeff there can only be one boundary.");
 }
 
 const Foam::scalarField
-FoamHeatTransferCoeff::getFoamField()
+FoamHeatTransferCoeff::getFoamField(const SubdomainName & boundary)
 {
   return _wall_quantities->heatTransferCoefficient(
-      getFoamProblem().getUserObject<UserObject>(_t_bulk_uo_name));
+      boundary, getFoamProblem().getUserObject<UserObject>(_t_bulk_uo_name));
 }

@@ -15,6 +15,6 @@ public:
   FoamHeatTransferCoeff(const InputParameters & params);
 
 protected:
-  virtual const Foam::scalarField getFoamField() override;
+  virtual const Foam::scalarField getFoamField(const SubdomainName & boundary) override;
   const UserObjectName & _t_bulk_uo_name;
 };

@@ -13,7 +13,7 @@ FoamWallHeatFlux::validParams()
 FoamWallHeatFlux::FoamWallHeatFlux(const InputParameters & params) : FoamWallVariableBase(params) {}
 
 const Foam::scalarField
-FoamWallHeatFlux::getFoamField()
+FoamWallHeatFlux::getFoamField(const SubdomainName & boundary)
 {
-  return _wall_quantities->wallHeatFlux();
+  return _wall_quantities->wallHeatFlux(boundary);
 }

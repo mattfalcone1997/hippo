@@ -12,8 +12,8 @@ public:
   static InputParameters validParams();
   explicit WallQuantitiesMultiphaseEuler(const InputParameters & params);
 
-  virtual Foam::scalarField wallTemperature() override;
-  virtual Foam::scalarField wallHeatFlux() override;
+  virtual Foam::scalarField wallTemperature(const SubdomainName & boundary) override;
+  virtual Foam::scalarField wallHeatFlux(const SubdomainName & boundary) override;
 
 protected:
   std::optional<std::reference_wrapper<const Foam::phaseSystem>> _phase_system;
