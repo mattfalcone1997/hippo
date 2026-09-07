@@ -12,8 +12,8 @@ public:
 
   virtual Foam::scalarField wallTemperature() override;
   virtual Foam::scalarField wallHeatFlux() override;
-  virtual Foam::scalarField heatTransferCoefficient() override;
 
 protected:
   const Foam::fvPatchScalarField & _boundary_temp;
+  const std::string & getTFieldName();
 };

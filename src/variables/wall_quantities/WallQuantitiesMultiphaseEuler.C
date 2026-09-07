@@ -60,24 +60,3 @@ WallQuantitiesMultiphaseEuler::wallHeatFlux()
 
   return q_w;
 }
-
-Foam::scalarField
-WallQuantitiesMultiphaseEuler::heatTransferCoefficient()
-{
-  const Foam::scalarField q = wallHeatFlux();
-  const Foam::scalarField Tw = wallTemperature();
-
-  _t_bulk_uo.execute();
-
-  Foam::scalarField htc{q.size(), 0};
-  const Foam::vectorField & cellCenters{_patch.Cf()};
-  const Foam::scalar eps = Foam::ROOTVSMALL;
-  for (int i = 0; i < htc.size(); ++i)
-  {
-    const Point p{cellCenters[i].x(), cellCenters[i].y(), cellCenters[i].z()};
-    const Foam::scalar T_ref = _t_bulk_uo.spatialValue(p);
-    htc[i] = q[i] / (Tw[i] - T_ref + eps);
-  }
-
-  return htc;
-}

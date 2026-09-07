@@ -1,31 +1,20 @@
 #pragma once
 
-#include "FEProblemBase.h"
-#include "FoamFieldBase.h"
+#include "FoamWallVariableBase.h"
 #include "InputParameters.h"
-#include "FoamMesh.h"
-#include "MooseObject.h"
 
 #include "MooseTypes.h"
-#include "fvCFD_moose.h"
 #include <fvPatchFieldsFwd.H>
 #include <scalarField.H>
 
-class FoamHeatTransferCoeff : public FoamFieldBase
+class FoamHeatTransferCoeff : public FoamWallVariableBase
 {
 public:
   static InputParameters validParams();
 
-  explicit FoamHeatTransferCoeff(const InputParameters & params);
-
-  virtual void transferVariable();
-
-  std::string foamVariable() const { return ""; };
+  FoamHeatTransferCoeff(const InputParameters & params);
 
 protected:
-  Foam::scalarField calculateHTC();
-  const Foam::scalarField calculate_qw(const Foam::fvPatchScalarField & Tbf);
-  // Pointer to the FoamMesh object
-  const SubdomainID _subdomain;
+  virtual const Foam::scalarField getFoamField() override;
   const UserObjectName & _t_bulk_uo_name;
 };
