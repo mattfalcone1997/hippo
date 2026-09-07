@@ -1,6 +1,8 @@
+#include "MooseError.h"
 #include "MooseTypes.h"
 #include "WallQuantitiesBase.h"
 #include "WallQuantitiesFluid.h"
+#include <basicThermo.H>
 #include <scalarField.H>
 #include <volFieldsFwd.H>
 #include <ThermophysicalTransportModel.H>
@@ -15,9 +17,17 @@ WallQuantitiesFluid::validParams()
 
 WallQuantitiesFluid::WallQuantitiesFluid(const InputParameters & params)
   : WallQuantitiesBase(params),
-    _boundary_temp(
-        _patch.lookupPatchField<Foam::volScalarField, double>(getParam<std::string>("T_name")))
+    _boundary_temp(_patch.lookupPatchField<Foam::volScalarField, double>(getTFieldName()))
 {
+}
+
+const std::string &
+WallQuantitiesFluid::getTFieldName()
+{
+  if (getFvMesh().lookupClass<Foam::basicThermo>().size() != 1)
+    mooseError("Simulation should have exactly one thermo object");
+
+  return getFvMesh().lookupType<Foam::basicThermo>().T().name();
 }
 
 Foam::scalarField
@@ -39,22 +49,4 @@ WallQuantitiesFluid::wallHeatFlux()
   q_w = kappaEffbf * _boundary_temp.snGrad();
 
   return q_w;
-}
-
-Foam::scalarField
-WallQuantitiesFluid::heatTransferCoefficient()
-{
-  Foam::scalarField htc{_patch.size(), 0};
-  const Foam::vectorField & cellCenters{_patch.Cf()};
-  const Foam::scalar eps = Foam::ROOTVSMALL;
-
-  auto q = wallHeatFlux();
-  for (int i = 0; i < htc.size(); ++i)
-  {
-    const Point p{cellCenters[i].x(), cellCenters[i].y(), cellCenters[i].z()};
-    const Foam::scalar T_ref = _t_bulk_uo.spatialValue(p);
-    htc[i] = q[i] / (_boundary_temp[i] - T_ref + eps);
-  }
-
-  return htc;
 }

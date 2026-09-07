@@ -14,7 +14,6 @@ public:
 
   virtual Foam::scalarField wallTemperature() override;
   virtual Foam::scalarField wallHeatFlux() override;
-  virtual Foam::scalarField heatTransferCoefficient() override;
 
 protected:
   std::optional<std::reference_wrapper<const Foam::phaseSystem>> _phase_system;
