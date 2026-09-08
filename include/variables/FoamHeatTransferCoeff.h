@@ -6,6 +6,7 @@
 #include "MooseTypes.h"
 #include <fvPatchFieldsFwd.H>
 #include <scalarField.H>
+#include <map>
 
 class FoamHeatTransferCoeff : public FoamWallVariableBase
 {
@@ -16,5 +17,5 @@ public:
 
 protected:
   virtual const Foam::scalarField getFoamField(const SubdomainName & boundary) override;
-  const UserObjectName & _t_bulk_uo_name;
+  std::map<SubdomainName, UserObjectName> _t_bulk_uo_name;
 };

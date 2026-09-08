@@ -6,7 +6,6 @@
 #include "Registry.h"
 #include "UserObject.h"
 #include <scalar.H>
-#include <scalarAndError.H>
 #include <scalarField.H>
 #include <string>
 #include <volFieldsFwd.H>
@@ -17,21 +16,29 @@ InputParameters
 FoamHeatTransferCoeff::validParams()
 {
   InputParameters params = FoamWallVariableBase::validParams();
-  params.addRequiredParam<UserObjectName>("bulk_temperature_uo",
-                                          "UserObject describing the bulk temperature");
+  params.addRequiredParam<std::vector<UserObjectName>>(
+      "bulk_temperature_uo", "UserObject describing the bulk temperature");
   return params;
 }
 
 FoamHeatTransferCoeff::FoamHeatTransferCoeff(const InputParameters & params)
-  : FoamWallVariableBase(params), _t_bulk_uo_name(getParam<UserObjectName>("bulk_temperature_uo"))
+  : FoamWallVariableBase(params), _t_bulk_uo_name()
 {
-  if (getParam<std::vector<SubdomainName>>("boundary").size() > 1)
-    mooseError("For FoamHeatTransferCoeff there can only be one boundary.");
+  const auto & boundaries = getParam<std::vector<SubdomainName>>("boundary");
+  const auto & t_bulks = getParam<std::vector<UserObjectName>>("t_bulk_uo");
+
+  if (t_bulks.size() != boundaries.size())
+    mooseError("Sizes of user object and boundary list should be the same.");
+
+  for (auto i = 0lu; i < boundaries.size(); ++i)
+  {
+    _t_bulk_uo_name[boundaries[i]] = t_bulks[i];
+  }
 }
 
 const Foam::scalarField
 FoamHeatTransferCoeff::getFoamField(const SubdomainName & boundary)
 {
   return _wall_quantities->heatTransferCoefficient(
-      boundary, getFoamProblem().getUserObject<UserObject>(_t_bulk_uo_name));
+      boundary, getFoamProblem().getUserObject<UserObject>(_t_bulk_uo_name.at(boundary)));
 }
