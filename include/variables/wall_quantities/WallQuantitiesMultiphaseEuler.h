@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MooseObject.h"
 #include "WallQuantitiesBase.h"
 #include <functional>
 #include <fvPatchFieldsFwd.H>
@@ -9,8 +10,7 @@
 class WallQuantitiesMultiphaseEuler : public WallQuantitiesBase
 {
 public:
-  static InputParameters validParams();
-  explicit WallQuantitiesMultiphaseEuler(const InputParameters & params);
+  explicit WallQuantitiesMultiphaseEuler(const MooseObject * moose_object);
 
   virtual Foam::scalarField wallTemperature(const SubdomainName & boundary) override;
   virtual Foam::scalarField wallHeatFlux(const SubdomainName & boundary) override;

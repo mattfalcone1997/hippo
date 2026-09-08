@@ -1,16 +1,14 @@
+#include "HippoInterface.h"
+#include "MooseObject.h"
 #include "UserObject.h"
 #include "WallQuantitiesBase.h"
 #include <fvPatch.H>
 #include <scalarField.H>
 
-InputParameters
-WallQuantitiesBase::validParams()
+WallQuantitiesBase::WallQuantitiesBase(const MooseObject * moose_object)
+  : HippoInterface(moose_object)
 {
-  InputParameters params = HippoObject::validParams();
-  return params;
 }
-
-WallQuantitiesBase::WallQuantitiesBase(const InputParameters & params) : HippoObject(params) {}
 
 Foam::scalarField
 WallQuantitiesBase::heatTransferCoefficient(const SubdomainName & boundary, UserObject & t_bulk_uo)
@@ -37,5 +35,8 @@ WallQuantitiesBase::heatTransferCoefficient(const SubdomainName & boundary, User
 const Foam::fvPatch &
 WallQuantitiesBase::getFoamPatch(const SubdomainName & boundary)
 {
-  return getFvMesh().boundary()[boundary];
+  const auto patch_id = getFvMesh().boundary().findIndex(boundary);
+  if (patch_id < 0)
+    mooseError("Boundary '", boundary, "' not found in OpenFOAM mesh.");
+  return getFvMesh().boundary()[patch_id];
 }

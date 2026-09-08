@@ -7,26 +7,19 @@
 #include <volFieldsFwd.H>
 #include <ThermophysicalTransportModel.H>
 
-InputParameters
-WallQuantitiesFluid::validParams()
-{
-  InputParameters params = WallQuantitiesBase::validParams();
-  params.addRequiredParam<std::string>("T_name", "Name of sinlge phase temperature field");
-  return params;
-}
-
-WallQuantitiesFluid::WallQuantitiesFluid(const InputParameters & params)
-  : WallQuantitiesBase(params)
+WallQuantitiesFluid::WallQuantitiesFluid(const MooseObject * moose_object)
+  : WallQuantitiesBase(moose_object)
 {
 }
 
 const std::string &
 WallQuantitiesFluid::getTFieldName()
 {
-  if (getFvMesh().lookupClass<Foam::basicThermo>().size() != 1)
+  const auto thermos = getFvMesh().lookupClass<Foam::basicThermo>();
+  if (thermos.size() != 1)
     mooseError("Simulation should have exactly one thermo object");
 
-  return getFvMesh().lookupType<Foam::basicThermo>().T().name();
+  return thermos.begin()()->T().name();
 }
 
 Foam::scalarField
@@ -34,7 +27,7 @@ WallQuantitiesFluid::wallTemperature(const SubdomainName & boundary)
 {
   auto & boundary_temp =
       getFoamPatch(boundary).lookupPatchField<Foam::volScalarField, double>(getTFieldName());
-  return boundary_temp.primitiveField();
+  return boundary_temp;
 }
 
 Foam::scalarField

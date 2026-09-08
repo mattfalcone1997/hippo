@@ -1,18 +1,13 @@
 #include "InputParameters.h"
+#include "MooseObject.h"
 #include "MooseTypes.h"
-#include "WallQuantitiesBase.h"
 #include "WallQuantitiesMultiphaseEuler.h"
 #include <scalarField.H>
+#include "fvCFD_moose.h"
 #include <wallBoiling.H>
 
-InputParameters
-WallQuantitiesMultiphaseEuler::validParams()
-{
-  return WallQuantitiesBase::validParams();
-}
-
-WallQuantitiesMultiphaseEuler::WallQuantitiesMultiphaseEuler(const InputParameters & params)
-  : WallQuantitiesBase(params), _phase_system()
+WallQuantitiesMultiphaseEuler::WallQuantitiesMultiphaseEuler(const MooseObject * moose_object)
+  : WallQuantitiesBase(moose_object), _phase_system()
 {
   if (!getFvMesh().foundObject<Foam::phaseSystem>(Foam::phaseSystem::propertiesName))
     mooseError("No phaseSystem found");
@@ -55,9 +50,12 @@ WallQuantitiesMultiphaseEuler::wallHeatFlux(const SubdomainName & boundary)
   auto boiling_models = _phase_system->get().fvModels().lookupType<Foam::fv::wallBoiling>();
   for (const auto & model : boiling_models)
   {
-    const auto & boiling_patch = model.mDotPf(patch.index());
-    q_w += boiling_patch.property("qQuenching");
-    q_w += boiling_patch.property("qEvaporative");
+    if (model.isPatchActive(patch.index()))
+    {
+      const auto & boiling_patch = model.mDotPf(patch.index());
+      q_w += boiling_patch.property("qQuenching");
+      q_w += boiling_patch.property("qEvaporative");
+    }
   }
 
   return q_w;

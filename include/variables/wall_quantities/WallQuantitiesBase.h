@@ -1,19 +1,18 @@
 #pragma once
 
-#include "HippoObject.h"
+#include "HippoInterface.h"
 #include "InputParameters.h"
+#include "MooseObject.h"
 #include "MooseTypes.h"
-#include <functional>
 #include <fvPatch.H>
 #include <fvPatchFieldsFwd.H>
 #include <scalarField.H>
 #include "UserObject.h"
 
-class WallQuantitiesBase : protected HippoObject
+class WallQuantitiesBase : protected HippoInterface
 {
 public:
-  static InputParameters validParams();
-  explicit WallQuantitiesBase(const InputParameters & params);
+  explicit WallQuantitiesBase(const MooseObject * moose_object);
   virtual Foam::scalarField wallTemperature(const SubdomainName & boundary) = 0;
   virtual Foam::scalarField wallHeatFlux(const SubdomainName & boundary) = 0;
   virtual Foam::scalarField heatTransferCoefficient(const SubdomainName & boundary,

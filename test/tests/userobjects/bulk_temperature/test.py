@@ -13,7 +13,7 @@ class TestAdjacentCellBulkTemperature(unittest.TestCase):
         times, temp1 = np.loadtxt(
             "main_out.csv", unpack=True, skiprows=1, delimiter=","
         )
-        times, temp2 = np.loadtxt(
+        _, temp2 = np.loadtxt(
             "main_out_hippo0.csv", unpack=True, skiprows=1, delimiter=","
         )
 

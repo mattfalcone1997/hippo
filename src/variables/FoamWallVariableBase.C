@@ -31,13 +31,11 @@ FoamWallVariableBase::createWallQuantities()
 
   if (wall_quantity == "FLUID")
   {
-    auto params = WallQuantitiesFluid::validParams();
-    return std::make_unique<WallQuantitiesFluid>(params);
+    return std::make_unique<WallQuantitiesFluid>(this);
   }
   else if (wall_quantity == "MULTIPHASE_EULER")
   {
-    auto params = WallQuantitiesMultiphaseEuler::validParams();
-    return std::make_unique<WallQuantitiesMultiphaseEuler>(params);
+    return std::make_unique<WallQuantitiesMultiphaseEuler>(this);
   }
 
   mooseError("WallQuantity '", wall_quantity, "' not found.");
