@@ -51,7 +51,7 @@ WallQuantitiesFluid::wallHeatFlux(const SubdomainName & boundary)
 }
 
 Foam::scalarField
-WallQuantitiesFluid::bulkTemperature(const Foam::labelUList & cells)
+WallQuantitiesFluid::internalTemperature(const Foam::labelUList & cells)
 {
   Foam::scalarField l_t_adjacent{cells.size()};
 
