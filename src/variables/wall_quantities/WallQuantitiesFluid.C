@@ -2,6 +2,7 @@
 #include "MooseTypes.h"
 #include "WallQuantitiesBase.h"
 #include "WallQuantitiesFluid.h"
+#include <UList.H>
 #include <basicThermo.H>
 #include <scalarField.H>
 #include <volFieldsFwd.H>
@@ -47,4 +48,17 @@ WallQuantitiesFluid::wallHeatFlux(const SubdomainName & boundary)
   q_w = kappaEffbf * boundary_temp.snGrad();
 
   return q_w;
+}
+
+Foam::scalarField
+WallQuantitiesFluid::bulkTemperature(const Foam::labelUList & cells)
+{
+  Foam::scalarField l_t_adjacent{cells.size()};
+
+  const auto & T = getFvMesh().lookupObject<Foam::volScalarField>(getTFieldName());
+  for (int i = 0; i < l_t_adjacent.size(); ++i)
+  {
+    l_t_adjacent[i] = T[cells[i]];
+  }
+  return l_t_adjacent;
 }

@@ -1,6 +1,7 @@
 #include "AdjacentCellBulkTemperature.h"
 #include "FoamProblem.h"
 #include "MooseTypes.h"
+#include "WallQuantitiesFactory.h"
 #include "petsclog.h"
 #include <Field.H>
 #include <ListOps.H>
@@ -30,6 +31,9 @@ AdjacentCellBulkTemperature::validParams()
   params.addParam<int>("max_leaf_size", 10, "Maximum leaf size to use for the KD tree search.");
   params.addParam<bool>(
       "reconstruct_tree", false, "Whether to rebuild the KD tree on each execution.");
+  params.addParam<MooseEnum>("wall_quantity",
+                             Hippo::internal::getWallQuantitiesEnum(),
+                             "Wall quantity based on fluid solver type");
   return params;
 }
 
@@ -39,7 +43,9 @@ AdjacentCellBulkTemperature::AdjacentCellBulkTemperature(const InputParameters &
     _foam_patch{getFoamPatch(getParam<SubdomainName>("boundary"))},
     _kd_centres{},
     _gl_t_adjacent{},
-    _kd_tree{}
+    _kd_tree{},
+    _wall_quantities(
+        Hippo::internal::createWallQuantities(*this, getParam<MooseEnum>("wall_quantity")))
 
 {
 }
@@ -106,14 +112,7 @@ AdjacentCellBulkTemperature::execute()
     buildKDTree();
 
   // Gather Temperature on each execute
-  Foam::scalarField l_t_adjacent{_foam_patch.Cf().size()};
-
-  const auto & T = getFvMesh().lookupObject<Foam::volScalarField>(getParam<std::string>("T_name"));
-  for (int i = 0; i < l_t_adjacent.size(); ++i)
-  {
-    int idx = _foam_patch.faceCells()[i];
-    l_t_adjacent[i] = T[idx];
-  }
+  Foam::scalarField l_t_adjacent{_wall_quantities->bulkTemperature(_foam_patch.faceCells())};
 
   const int nProcs{Foam::UPstream::nProcs()};
   const MPI_Comm comm{(nProcs == 1) ? MPI_COMM_WORLD : Foam::PstreamGlobals::MPI_COMM_FOAM};
