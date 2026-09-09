@@ -14,6 +14,7 @@ public:
 
   virtual Foam::scalarField wallTemperature(const SubdomainName & boundary) override;
   virtual Foam::scalarField wallHeatFlux(const SubdomainName & boundary) override;
+  virtual Foam::scalarField bulkTemperature(const Foam::labelUList & cells) override;
 
 protected:
   std::optional<std::reference_wrapper<const Foam::phaseSystem>> _phase_system;

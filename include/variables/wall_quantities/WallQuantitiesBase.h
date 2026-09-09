@@ -4,6 +4,7 @@
 #include "InputParameters.h"
 #include "MooseObject.h"
 #include "MooseTypes.h"
+#include <UList.H>
 #include <fvPatch.H>
 #include <fvPatchFieldsFwd.H>
 #include <scalarField.H>
@@ -15,6 +16,7 @@ public:
   explicit WallQuantitiesBase(const MooseObject * moose_object);
   virtual Foam::scalarField wallTemperature(const SubdomainName & boundary) = 0;
   virtual Foam::scalarField wallHeatFlux(const SubdomainName & boundary) = 0;
+  virtual Foam::scalarField bulkTemperature(const Foam::labelUList & cells) = 0;
   virtual Foam::scalarField heatTransferCoefficient(const SubdomainName & boundary,
                                                     UserObject & t_bulk_uo);
 

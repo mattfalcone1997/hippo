@@ -60,3 +60,21 @@ WallQuantitiesMultiphaseEuler::wallHeatFlux(const SubdomainName & boundary)
 
   return q_w;
 }
+
+Foam::scalarField
+WallQuantitiesMultiphaseEuler::bulkTemperature(const Foam::labelUList & cells)
+{
+  Foam::scalarField l_t_adjacent(cells.size(), 0.);
+
+  for (const auto & model : _phase_system->get().phases())
+  {
+    const auto & T = model.thermo().T();
+    const auto & alpha = model;
+    for (int i = 0; i < l_t_adjacent.size(); ++i)
+    {
+      int idx = cells[i];
+      l_t_adjacent[i] += alpha[idx] * T[idx];
+    }
+  }
+  return l_t_adjacent;
+}

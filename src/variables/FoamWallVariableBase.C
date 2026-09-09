@@ -2,8 +2,7 @@
 #include "FoamWallVariableBase.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
-#include "WallQuantitiesFluid.h"
-#include "WallQuantitiesMultiphaseEuler.h"
+#include "WallQuantitiesFactory.h"
 #include "FoamMesh.h"
 #include "hippoUtils.h"
 #include "FoamProblem.h"
@@ -12,33 +11,18 @@ InputParameters
 FoamWallVariableBase::validParams()
 {
   auto params = FoamFieldBase::validParams();
-  MooseEnum wall_quantity("FLUID MULTIPHASE_EULER", "FLUID");
-  params.addParam<MooseEnum>(
-      "wall_quantity", wall_quantity, "Wall quantity based on fluid solver type");
+  params.addParam<MooseEnum>("wall_quantity",
+                             Hippo::internal::getWallQuantitiesEnum(),
+                             "Wall quantity based on fluid solver type");
   params.addRequiredParam<std::vector<SubdomainName>>("boundary", "Boundary this object mirrors.");
   return params;
 }
 
 FoamWallVariableBase::FoamWallVariableBase(const InputParameters & params)
-  : FoamFieldBase(params), _wall_quantities(createWallQuantities())
+  : FoamFieldBase(params),
+    _wall_quantities(
+        Hippo::internal::createWallQuantities(*this, getParam<MooseEnum>("wall_quantity")))
 {
-}
-
-std::unique_ptr<WallQuantitiesBase>
-FoamWallVariableBase::createWallQuantities()
-{
-  const MooseEnum & wall_quantity(getParam<MooseEnum>("wall_quantity"));
-
-  if (wall_quantity == "FLUID")
-  {
-    return std::make_unique<WallQuantitiesFluid>(this);
-  }
-  else if (wall_quantity == "MULTIPHASE_EULER")
-  {
-    return std::make_unique<WallQuantitiesMultiphaseEuler>(this);
-  }
-
-  mooseError("WallQuantity '", wall_quantity, "' not found.");
 }
 
 void

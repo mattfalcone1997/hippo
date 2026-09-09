@@ -2,6 +2,7 @@
 
 #include "GeneralUserObject.h"
 #include "HippoInterface.h"
+#include "WallQuantitiesBase.h"
 #include "InputParameters.h"
 #include "KDTree.h"
 #include <fvPatch.H>
@@ -30,4 +31,5 @@ private:
   std::vector<Point> _kd_centres;
   Foam::scalarField _gl_t_adjacent;
   std::unique_ptr<KDTree> _kd_tree;
+  std::unique_ptr<WallQuantitiesBase> _wall_quantities;
 };
