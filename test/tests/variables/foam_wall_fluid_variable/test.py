@@ -1,4 +1,4 @@
-"""Analytical temperature and heat flux transferred through wall variables"""
+"""Analytical temperature and heat flux transferred through fluid wall variables"""
 
 import unittest
 
@@ -9,11 +9,11 @@ from read_hippo_data import (  # pylint: disable=E0401
 )
 
 
-class TestFoamVariableTransfer(unittest.TestCase):
+class TestFoamVariableFluid(unittest.TestCase):
     """Test class for shadowing scalar fields in Hippo."""
 
-    def test_variable_transfer(self):
-        """Test case for shadowing a volScalarField."""
+    def test_wall_temperature(self):
+        """Test case for shadowing a temperature."""
 
         all_times = get_exodus_times("main_out.e")
         np.testing.assert_allclose(
@@ -46,7 +46,7 @@ class TestFoamVariableTransfer(unittest.TestCase):
                 ),
             )
 
-    def test_wall_heat_flux_transfer(self):
+    def test_wall_heat_flux(self):
         """Check the signed normal conductive heat flux on every patch."""
         all_times = get_exodus_times("main_out.e")
         np.testing.assert_allclose(
