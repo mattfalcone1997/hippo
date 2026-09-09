@@ -13,7 +13,7 @@ public:
 
   virtual Foam::scalarField wallTemperature(const SubdomainName & boundary) override;
   virtual Foam::scalarField wallHeatFlux(const SubdomainName & boundary) override;
-  virtual Foam::scalarField bulkTemperature(const Foam::labelUList & cells) override;
+  virtual Foam::scalarField internalTemperature(const Foam::labelUList & cells) override;
 
 protected:
   const std::string & getTFieldName();

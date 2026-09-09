@@ -47,22 +47,11 @@ WallQuantitiesMultiphaseEuler::wallHeatFlux(const SubdomainName & boundary)
     q_w += alpha * kappaEffbf * Tbf.snGrad();
   }
 
-  auto boiling_models = _phase_system->get().fvModels().lookupType<Foam::fv::wallBoiling>();
-  for (const auto & model : boiling_models)
-  {
-    if (model.isPatchActive(patch.index()))
-    {
-      const auto & boiling_patch = model.mDotPf(patch.index());
-      q_w += boiling_patch.property("qQuenching");
-      q_w += boiling_patch.property("qEvaporative");
-    }
-  }
-
   return q_w;
 }
 
 Foam::scalarField
-WallQuantitiesMultiphaseEuler::bulkTemperature(const Foam::labelUList & cells)
+WallQuantitiesMultiphaseEuler::internalTemperature(const Foam::labelUList & cells)
 {
   Foam::scalarField l_t_adjacent(cells.size(), 0.);
 
