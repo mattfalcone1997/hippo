@@ -1,4 +1,4 @@
-"""Tests for shadowing scalar variables and function objects using MOOSE"""
+"""Analytical temperature and heat flux transferred through wall variables"""
 
 import unittest
 
@@ -15,7 +15,11 @@ class TestFoamVariableTransfer(unittest.TestCase):
     def test_variable_transfer(self):
         """Test case for shadowing a volScalarField."""
 
-        times = get_exodus_times("main_out.e")[1:]
+        all_times = get_exodus_times("main_out.e")
+        np.testing.assert_allclose(
+            all_times, np.arange(33) * 0.01, rtol=1e-7, atol=1e-12
+        )
+        times = all_times[1:]
         for time in times:
             coords, temp = read_moose_exodus_data(
                 "main_out.e", time, variable="T_shadow"
@@ -43,8 +47,12 @@ class TestFoamVariableTransfer(unittest.TestCase):
             )
 
     def test_wall_heat_flux_transfer(self):
-        """Test case for shadowing the output of the wallHeatFlux functionObject."""
-        times = get_exodus_times("main_out.e")[1:]
+        """Check the signed normal conductive heat flux on every patch."""
+        all_times = get_exodus_times("main_out.e")
+        np.testing.assert_allclose(
+            all_times, np.arange(33) * 0.01, rtol=1e-7, atol=1e-12
+        )
+        times = all_times[1:]
         for time in times:
             coords, whf = read_moose_exodus_data(
                 "main_out.e", time, variable="whf_shadow"

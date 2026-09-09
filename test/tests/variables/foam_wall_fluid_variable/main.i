@@ -1,7 +1,7 @@
 [Mesh]
     type = FoamMesh
     case = 'foam'
-    foam_patch = 'left right bottom top back front'
+    foam_patch = 'left right top front bottom back'
 []
 
 [Variables]
@@ -14,16 +14,12 @@
 
 [FoamVariables]
     [T_shadow]
-        type = FoamVariableField
-        foam_variable = 'T'
-    []
-    [e_shadow]
-        type = FoamVariableField
-        foam_variable = 'e'
+        type = FoamWallTemperature
+        boundary = 'left right top front bottom back'
     []
     [whf_shadow]
-        type = FoamFunctionObject
-        foam_variable = 'wallHeatFlux'
+        type = FoamWallHeatFlux
+        boundary = 'left right top front bottom back'
     []
 []
 
