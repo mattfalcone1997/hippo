@@ -37,6 +37,7 @@ WallQuantitiesMultiphaseEuler::wallHeatFlux(const SubdomainName & boundary)
 {
   auto & patch = getFoamPatch(boundary);
   Foam::scalarField q_w(patch.size(), 0.);
+  // Loop through phases and add contribution from each
   for (const auto & model : _phase_system->get().phases())
   {
     const auto & kappaEffbf = model.kappaEff(patch.index());

@@ -4,6 +4,11 @@
 #include "MooseTypes.h"
 #include "WallQuantitiesBase.h"
 
+/**
+ * Base class for transferring derived OpenFOAM wall quantities to MOOSE variables.
+ * Delegates quantity evaluation to the selected WallQuantities implementation
+ * and maps boundary-face values onto the corresponding MOOSE elements.
+ */
 class FoamWallVariableBase : public FoamFieldBase
 {
 public:

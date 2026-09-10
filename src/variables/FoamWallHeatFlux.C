@@ -1,4 +1,5 @@
 #include "FoamWallHeatFlux.h"
+#include "InputParameters.h"
 #include "Registry.h"
 #include <memory>
 
@@ -7,7 +8,13 @@ registerMooseObject("hippoApp", FoamWallHeatFlux);
 InputParameters
 FoamWallHeatFlux::validParams()
 {
-  return FoamWallVariableBase::validParams();
+  InputParameters params = FoamWallVariableBase::validParams();
+  params.addClassDescription(
+      "Transfers wall heat flux from the selected OpenFOAM boundaries to a MOOSE "
+      "variable. For multiphase flow, the flux includes contributions from all phases. "
+      "Positive values indicate heat entering the fluid.");
+
+  return params;
 }
 
 FoamWallHeatFlux::FoamWallHeatFlux(const InputParameters & params) : FoamWallVariableBase(params) {}
