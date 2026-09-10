@@ -18,6 +18,10 @@ FoamHeatTransferCoeff::validParams()
   InputParameters params = FoamWallVariableBase::validParams();
   params.addRequiredParam<std::vector<UserObjectName>>(
       "bulk_temperature_uo", "UserObject describing the bulk temperature");
+  params.addClassDescription("Computes and transfers the wall heat transfer coefficient as "
+                             "h = q / (T_wall - T_bulk) on the selected OpenFOAM boundaries. "
+                             "Bulk temperature is supplied by a user object for each boundary.");
+
   return params;
 }
 
