@@ -20,7 +20,8 @@ FoamWallPostprocessor::validParams()
 FoamWallPostprocessor::FoamWallPostprocessor(const InputParameters & params)
   : FoamSidePostprocessor(params),
     _wall_quantities(
-        Hippo::internal::createWallQuantities(*this, getParam<MooseEnum>("wall_quantity")))
+        Hippo::internal::createWallQuantities(*this, getParam<MooseEnum>("wall_quantity"))),
+    _value(0.)
 {
 }
 

@@ -5,7 +5,13 @@
 #include "MooseVariableFieldBase.h"
 #include "FoamMesh.h"
 #include <InputParameters.h>
+#include <algorithm>
+#include <fvBoundaryMesh.H>
+#include <iterator>
+#include <optional>
+#include <set>
 #include <string>
+#include <vector>
 
 namespace Hippo
 {
@@ -25,6 +31,35 @@ getDemangleName()
 
 namespace internal
 {
+/// Return the first repeated value in input order without modifying the vector.
+template <typename T>
+inline std::optional<T>
+findDuplicate(const std::vector<T> & values)
+{
+  std::set<T> seen;
+  for (const auto & value : values)
+    if (!seen.insert(value).second)
+      return value;
+  return std::nullopt;
+}
+
+/// Validate unique boundary names against the caller's allowed names; empty lists are allowed.
+inline void
+validateBoundaries(const std::vector<SubdomainName> & boundaries,
+                   const Foam::fvBoundaryMesh & patch)
+{
+  if (const auto duplicate = findDuplicate(boundaries))
+    mooseError("Boundary '", *duplicate, "' is listed more than once.");
+
+  std::vector<SubdomainName> valid_names;
+  for (const auto & patch : patch)
+    valid_names.emplace_back(patch.name());
+
+  for (const auto & boundary : boundaries)
+    if (std::find(valid_names.begin(), valid_names.end(), boundary) == valid_names.end())
+      mooseError("Boundary '", boundary, "' not found in the available boundaries.");
+}
+
 template <typename T>
 inline void
 copyParamFromParam(InputParameters & dst, const InputParameters & src, const std::string & name_in)

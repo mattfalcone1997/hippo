@@ -1,6 +1,7 @@
 #include "FoamSidePostprocessor.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
+#include "hippoUtils.h"
 
 InputParameters
 FoamSidePostprocessor::validParams()
@@ -14,11 +15,10 @@ FoamSidePostprocessor::validParams()
 FoamSidePostprocessor::FoamSidePostprocessor(const InputParameters & params)
   : FoamPostprocessorBase(params), _boundary(params.get<std::vector<SubdomainName>>("boundary"))
 {
-  for (auto & boundary : _boundary)
-  {
-    if (getFvMesh().boundary().findIndex(boundary) == -1)
-      mooseError("Boundary '", boundary, "' not found in FoamMesh.");
-  }
+  if (_boundary.empty())
+    mooseError("At least one boundary must be specified.");
+
+  Hippo::internal::validateBoundaries(_boundary, getFvMesh().boundary());
 }
 
 Real
