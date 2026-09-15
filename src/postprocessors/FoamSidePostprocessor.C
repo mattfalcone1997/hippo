@@ -20,3 +20,21 @@ FoamSidePostprocessor::FoamSidePostprocessor(const InputParameters & params)
       mooseError("Boundary '", boundary, "' not found in FoamMesh.");
   }
 }
+
+Real
+FoamSidePostprocessor::getArea()
+{
+  Real area = 0.;
+  // loop over boundary ids
+  for (auto & boundary : _boundary)
+  {
+    auto & areas = getFvMesh().boundary()[boundary].magSf();
+    for (int i = 0; i < areas.size(); ++i)
+    {
+      area += areas[i];
+    }
+  }
+  // sum over ranks
+  gatherSum(area);
+  return area;
+}
