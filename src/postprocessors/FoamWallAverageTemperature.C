@@ -2,6 +2,8 @@
 #include "FoamWallPostprocessor.h"
 #include "InputParameters.h"
 
+registerMooseObject("hippoApp", FoamWallAverageTemperature);
+
 InputParameters
 FoamWallAverageTemperature::validParams()
 {

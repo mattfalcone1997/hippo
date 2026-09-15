@@ -5,6 +5,8 @@
 #include "MooseTypes.h"
 #include "UserObject.h"
 
+registerMooseObject("hippoApp", FoamWallAverageHTC);
+
 InputParameters
 FoamWallAverageHTC::validParams()
 {
@@ -19,6 +21,9 @@ FoamWallAverageHTC::FoamWallAverageHTC(const InputParameters & params)
 {
   const auto & boundaries = getParam<std::vector<SubdomainName>>("boundary");
   const auto & t_bulks = getParam<std::vector<UserObjectName>>("bulk_temperature_uo");
+
+  if (t_bulks.size() != boundaries.size())
+    paramError("bulk_temperature_uo", "Provide one bulk temperature user object per boundary.");
 
   for (auto i = 0lu; i < _boundary.size(); ++i)
   {

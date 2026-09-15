@@ -1,5 +1,7 @@
 #include "FoamWallAverageHeatFlux.h"
 
+registerMooseObject("hippoApp", FoamWallAverageHeatFlux);
+
 InputParameters
 FoamWallAverageHeatFlux::validParams()
 {
