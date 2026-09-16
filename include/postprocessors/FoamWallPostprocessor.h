@@ -18,6 +18,8 @@ public:
 protected:
   Real integrateField();
 
+  Real averageField() { return integrateField() / getArea(); };
+
   virtual Foam::scalarField wallField(const std::string & boundary) = 0;
 
   std::unique_ptr<WallQuantitiesBase> _wall_quantities;

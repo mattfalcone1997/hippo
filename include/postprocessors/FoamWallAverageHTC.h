@@ -18,10 +18,6 @@ public:
   void compute() override;
 
 protected:
-  Foam::scalarField wallField(const std::string & boundary) override
-  {
-    return _wall_quantities->heatTransferCoefficient(
-        boundary, getFoamProblem().getUserObject<UserObject>(_t_bulk_uo_names.at(boundary)));
-  }
+  Foam::scalarField wallField(const std::string & boundary) override;
   std::map<SubdomainName, UserObjectName> _t_bulk_uo_names;
 };

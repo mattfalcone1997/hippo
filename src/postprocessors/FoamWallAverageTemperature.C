@@ -8,6 +8,9 @@ InputParameters
 FoamWallAverageTemperature::validParams()
 {
   InputParameters params = FoamWallPostprocessor::validParams();
+  params.addClassDescription(
+      "Computes the area-weighted average wall temperature in K over the selected OpenFOAM "
+      "boundary patches.");
   return params;
 }
 
@@ -19,5 +22,5 @@ FoamWallAverageTemperature::FoamWallAverageTemperature(const InputParameters & p
 void
 FoamWallAverageTemperature::compute()
 {
-  _value = integrateField() / getArea();
+  _value = averageField();
 }
