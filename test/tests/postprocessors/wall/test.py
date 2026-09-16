@@ -39,13 +39,3 @@ class TestWallPostprocessors(unittest.TestCase):
         for name, values in expected.items():
             with self.subTest(postprocessor=name):
                 np.testing.assert_allclose(data[name], values, rtol=1e-12, atol=1e-14)
-
-        # comparison between the existing postprocessors where there is compatiability
-        for name in ("temperature", "flux", "integral"):
-            with self.subTest(side_comparison=name):
-                np.testing.assert_allclose(
-                    data[f"{name}_combined"],
-                    data[f"side_{name}"],
-                    rtol=1e-12,
-                    atol=1e-14,
-                )

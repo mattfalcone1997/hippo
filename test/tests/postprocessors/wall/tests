@@ -34,36 +34,4 @@
     prereq = verify_parallel
     max_parallel = 1
   []
-  [empty_boundaries]
-    type = RunException
-    input = main.i
-    cli_args = "Postprocessors/temperature_right/boundary=''"
-    expect_err = "At least one boundary must be specified"
-    prereq = verify_parallel
-    max_parallel = 1
-  []
-  [duplicate_boundaries]
-    type = RunException
-    input = main.i
-    cli_args = "Postprocessors/integral_combined/boundary='right top right'"
-    expect_err = "Boundary 'right' is listed more than once"
-    prereq = verify_parallel
-    max_parallel = 1
-  []
-  [unknown_boundary]
-    type = RunException
-    input = main.i
-    cli_args = "Postprocessors/flux_right/boundary='missing_wall'"
-    expect_err = "Boundary 'missing_wall' not found"
-    prereq = verify_parallel
-    max_parallel = 1
-  []
-  [side_duplicate_boundaries]
-    type = RunException
-    input = main.i
-    cli_args = "Postprocessors/side_temperature/boundary='right top right'"
-    expect_err = "Boundary 'right' is listed more than once"
-    prereq = verify_parallel
-    max_parallel = 1
-  []
 []

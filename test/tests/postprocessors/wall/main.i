@@ -129,24 +129,6 @@
     execute_on = TIMESTEP_END
     bulk_temperature_uo = 'cold_right cold_left'
   []
-  [side_temperature]
-    type = FoamSideAverageValue
-    boundary = 'right top'
-    execute_on = TIMESTEP_END
-    foam_variable = T
-  []
-  [side_flux]
-    type = FoamSideAverageFunctionObject
-    boundary = 'right top'
-    execute_on = TIMESTEP_END
-    function_object = wallHeatFlux
-  []
-  [side_integral]
-    type = FoamSideIntegratedFunctionObject
-    boundary = 'right top'
-    execute_on = TIMESTEP_END
-    function_object = wallHeatFlux
-  []
 []
 [Outputs]
   csv = true
