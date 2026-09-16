@@ -1,10 +1,8 @@
 #pragma once
 
-#include "FoamProblem.h"
 #include "FoamWallPostprocessor.h"
 #include "InputParameters.h"
 #include "MooseTypes.h"
-#include "UserObject.h"
 #include <map>
 #include <scalarField.H>
 

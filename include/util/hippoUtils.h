@@ -5,9 +5,7 @@
 #include "MooseVariableFieldBase.h"
 #include "FoamMesh.h"
 #include <InputParameters.h>
-#include <algorithm>
 #include <fvBoundaryMesh.H>
-#include <iterator>
 #include <optional>
 #include <set>
 #include <string>
@@ -46,17 +44,13 @@ findDuplicate(const std::vector<T> & values)
 /// Validate unique boundary names against the caller's allowed names; empty lists are allowed.
 inline void
 validateBoundaries(const std::vector<SubdomainName> & boundaries,
-                   const Foam::fvBoundaryMesh & patch)
+                   const Foam::fvBoundaryMesh & patches)
 {
   if (const auto duplicate = findDuplicate(boundaries))
     mooseError("Boundary '", *duplicate, "' is listed more than once.");
 
-  std::vector<SubdomainName> valid_names;
-  for (const auto & patch : patch)
-    valid_names.emplace_back(patch.name());
-
   for (const auto & boundary : boundaries)
-    if (std::find(valid_names.begin(), valid_names.end(), boundary) == valid_names.end())
+    if (patches.findIndex(boundary) < 0)
       mooseError("Boundary '", boundary, "' not found in the available boundaries.");
 }
 

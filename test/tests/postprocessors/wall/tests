@@ -30,7 +30,7 @@
     type = RunException
     input = main.i
     cli_args = "Postprocessors/htc_opposite/bulk_temperature_uo=cold_left"
-    expect_err = 'Provide one bulk temperature user object per boundary'
+    expect_err = 'Exactly one bulk temperature user object must be provided per boundary'
     prereq = verify_parallel
     max_parallel = 1
   []

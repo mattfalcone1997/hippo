@@ -22,7 +22,7 @@ protected:
   Real integrateField();
 
   /// Compute the area-weighted average over the selected boundaries across all MPI ranks.
-  Real averageField() { return integrateField() / getArea(); };
+  Real averageField() { return integrateField() / getArea(); }
 
   /// Return the quantity to integrate for each local face of the specified boundary.
   virtual Foam::scalarField wallField(const std::string & boundary) = 0;

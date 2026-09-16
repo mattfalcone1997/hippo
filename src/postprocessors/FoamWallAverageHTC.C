@@ -1,4 +1,5 @@
 #include "FoamWallAverageHTC.h"
+#include "FoamProblem.h"
 #include "FoamWallPostprocessor.h"
 #include "InputParameters.h"
 #include "MooseError.h"
@@ -18,7 +19,8 @@ FoamWallAverageHTC::validParams()
       "over the selected OpenFOAM boundary patches, using the supplied bulk temperature user "
       "objects and heat flux positive into the fluid.");
   params.addRequiredParam<std::vector<UserObjectName>>(
-      "bulk_temperature_uo", "Bulk temperature user objects for each boundary");
+      "bulk_temperature_uo",
+      "One bulk temperature user object per boundary, in the same order as boundary.");
   return params;
 }
 

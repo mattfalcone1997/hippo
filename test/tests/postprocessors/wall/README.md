@@ -11,4 +11,4 @@ cancellation. HTC uses distinct fixed bulk temperatures on the two ends and
 reversed boundary order to check the mapping. The two-rank run includes ranks
 with no faces on an end patch and verifies the global reductions. Run and verify
 serially before reusing the output for the parallel run. A malformed HTC list
-must fail with a parameter error.
+must fail with an error explaining that exactly one bulk temperature user object is required per boundary.
