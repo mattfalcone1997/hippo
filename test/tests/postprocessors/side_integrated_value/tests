@@ -17,7 +17,7 @@
         [run_parallel]
             type = RunApp
             input = main.i
-            prereq = postprocessor_test/setup
+            prereq = postprocessor_test/verify_serial
             min_parallel=2
             max_parallel=2
         []
