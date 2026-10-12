@@ -1,4 +1,5 @@
 [Tests]
+  requirements = 'Tests bulk temperature user objects for HTC calculations'
   [fixed_bulk_tests]
     type = CSVDiff
     input = fixed_bulk_temperature.i

@@ -29,8 +29,6 @@ AdjacentCellBulkTemperature::validParams()
   params.addRequiredParam<SubdomainName>("boundary", "Boundary this object applies to.");
   params.addParam<std::string>("T_name", "T", "Temperature name in the OpenFOAM simulation.");
   params.addParam<int>("max_leaf_size", 10, "Maximum leaf size to use for the KD tree search.");
-  params.addParam<bool>(
-      "reconstruct_tree", false, "Whether to rebuild the KD tree on each execution.");
   params.addParam<MooseEnum>("wall_quantity",
                              Hippo::internal::getWallQuantitiesEnum(),
                              "Wall quantity based on fluid solver type");
@@ -48,6 +46,7 @@ AdjacentCellBulkTemperature::AdjacentCellBulkTemperature(const InputParameters &
         Hippo::internal::createWallQuantities(*this, getParam<MooseEnum>("wall_quantity")))
 
 {
+  buildKDTree();
 }
 
 void
@@ -69,21 +68,21 @@ AdjacentCellBulkTemperature::buildKDTree()
   std::vector<int> face_sizes(nProcs);
   std::vector<int> face_displs(nProcs);
   _mpi_sizes.resize(nProcs);
-  _mpi_displs.resize(nProcs);
+  _mpi_gather_offsets.resize(nProcs);
 
   // Create parameters for MPI gather operations to be reused in execute
   MPI_Allgather(&l_num_faces, 1, MPI_INT, _mpi_sizes.data(), 1, MPI_INT, comm);
-  _mpi_displs[0] = 0;
+  _mpi_gather_offsets[0] = 0;
   for (int i = 0; i < nProcs - 1; ++i)
   {
-    _mpi_displs[i + 1] = _mpi_displs[i] + _mpi_sizes[i];
+    _mpi_gather_offsets[i + 1] = _mpi_gather_offsets[i] + _mpi_sizes[i];
   }
 
   // Account for vector for gathering coordinates
   for (int i = 0; i < nProcs; ++i)
   {
     face_sizes[i] = _mpi_sizes[i] * 3;
-    face_displs[i] = _mpi_displs[i] * 3;
+    face_displs[i] = _mpi_gather_offsets[i] * 3;
   }
 
   Foam::vectorField gl_face_centres(_gl_t_adjacent.size());
@@ -108,9 +107,6 @@ AdjacentCellBulkTemperature::buildKDTree()
 void
 AdjacentCellBulkTemperature::execute()
 {
-  if (getParam<bool>("reconstruct_tree") || _gl_t_adjacent.size() == 0)
-    buildKDTree();
-
   // Gather Temperature on each execute
   Foam::scalarField l_t_adjacent{_wall_quantities->internalTemperature(_foam_patch.faceCells())};
 
@@ -121,7 +117,7 @@ AdjacentCellBulkTemperature::execute()
                  MPI_DOUBLE,
                  _gl_t_adjacent.data(),
                  _mpi_sizes.data(),
-                 _mpi_displs.data(),
+                 _mpi_gather_offsets.data(),
                  MPI_DOUBLE,
                  comm);
 }

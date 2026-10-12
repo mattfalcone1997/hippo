@@ -1,9 +1,9 @@
-#include "HippoInterface.h"
-#include "MooseObject.h"
-#include "UserObject.h"
 #include "WallQuantitiesBase.h"
 #include <fvPatch.H>
+#include <scalar.H>
 #include <scalarField.H>
+#include <cmath>
+#include "UserObject.h"
 
 WallQuantitiesBase::WallQuantitiesBase(const MooseObject * moose_object)
   : HippoInterface(moose_object)
@@ -18,7 +18,6 @@ WallQuantitiesBase::heatTransferCoefficient(const SubdomainName & boundary, User
   const Foam::fvPatch & patch = getFoamPatch(boundary);
 
   const Foam::vectorField & cellCenters{patch.Cf()};
-  const Foam::scalar eps = Foam::ROOTVSMALL;
 
   t_bulk_uo.execute();
   Foam::scalarField htc{patch.size(), 0};
@@ -26,7 +25,10 @@ WallQuantitiesBase::heatTransferCoefficient(const SubdomainName & boundary, User
   {
     const Point p{cellCenters[i].x(), cellCenters[i].y(), cellCenters[i].z()};
     const Foam::scalar T_ref = t_bulk_uo.spatialValue(p);
-    htc[i] = q[i] / (T_wall[i] - T_ref + eps);
+
+    Foam::scalar deltaT = T_wall[i] - T_ref;
+    deltaT = (std::abs(deltaT) > 1e-10) ? deltaT : std::copysign(1e-10, deltaT);
+    htc[i] = q[i] / deltaT;
   }
 
   return htc;

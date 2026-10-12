@@ -8,9 +8,8 @@
 #include <MooseError.h>
 #include <MooseTypes.h>
 #include <MooseVariableFieldBase.h>
-#include <algorithm>
-#include "InputParameters.h"
-#include "VariadicTable.h"
+#include <InputParameters.h>
+#include <VariadicTable.h>
 
 #include <finiteVolume/solver/solver.H>
 #include <word.H>

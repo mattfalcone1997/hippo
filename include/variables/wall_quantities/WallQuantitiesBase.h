@@ -1,14 +1,13 @@
 #pragma once
 
 #include "HippoInterface.h"
-#include "InputParameters.h"
 #include "MooseObject.h"
 #include "MooseTypes.h"
 #include <UList.H>
 #include <fvPatch.H>
-#include <fvPatchFieldsFwd.H>
 #include <scalarField.H>
-#include "UserObject.h"
+
+class UserObject;
 
 /*
  * Base class for handling wall-related solver-specific thermal quantities including

@@ -3,6 +3,8 @@
 #include "GeneralUserObject.h"
 #include "InputParameters.h"
 
+/// UserObject that applies a fixed reference temperature for HTC
+/// calculations
 class FixedBulkTemperature : public GeneralUserObject
 {
 public:

@@ -1,4 +1,3 @@
-
 [Mesh]
   type = FoamMesh
   case = adjacent_cell
