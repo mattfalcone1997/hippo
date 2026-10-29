@@ -108,8 +108,7 @@ AdjacentCellBulkTemperature::execute()
   // Gather Temperature on each execute
   Foam::scalarField l_t_adjacent{_wall_quantities->internalTemperature(_foam_patch.faceCells())};
 
-  const int nProcs{Foam::UPstream::nProcs()};
-  const MPI_Comm comm{(nProcs == 1) ? MPI_COMM_WORLD : Foam::PstreamGlobals::MPI_COMM_FOAM};
+  const MPI_Comm comm{_communicator.get()};
   MPI_Allgatherv(l_t_adjacent.data(),
                  l_t_adjacent.size(),
                  MPI_DOUBLE,

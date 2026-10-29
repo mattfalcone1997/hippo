@@ -1,5 +1,6 @@
 #include "AddFoamVariableAction.h"
 #include "FEProblemBase.h"
+#include "FoamFieldBase.h"
 
 #include "InputParameters.h"
 #include "MooseObjectAction.h"
