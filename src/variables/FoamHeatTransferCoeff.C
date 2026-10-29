@@ -1,4 +1,5 @@
 #include "FoamHeatTransferCoeff.h"
+#include "BulkTemperatureUserObject.h"
 #include "FoamProblem.h"
 #include "FoamWallVariableBase.h"
 #include "InputParameters.h"
@@ -44,5 +45,6 @@ const Foam::scalarField
 FoamHeatTransferCoeff::getFoamField(const SubdomainName & boundary)
 {
   return _wall_quantities->heatTransferCoefficient(
-      boundary, getFoamProblem().getUserObject<UserObject>(_t_bulk_uo_name.at(boundary)));
+      boundary,
+      getFoamProblem().getUserObject<BulkTemperatureUserObject>(_t_bulk_uo_name.at(boundary)));
 }

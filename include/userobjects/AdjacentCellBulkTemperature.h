@@ -1,10 +1,9 @@
 #pragma once
 
-#include "fvCFD_moose.h"
 #include "HippoInterface.h"
+#include "fvCFD_moose.h"
 #include "WallQuantitiesBase.h"
-
-#include "GeneralUserObject.h"
+#include "BulkTemperatureUserObject.h"
 #include "InputParameters.h"
 #include "KDTree.h"
 
@@ -15,15 +14,13 @@
 
 /// UserObject that provides the bulk fluid temperature for HTC calculations based on the
 /// temperature of the adjacent cell to the wall.
-class AdjacentCellBulkTemperature : public GeneralUserObject, public HippoInterface
+class AdjacentCellBulkTemperature : public BulkTemperatureUserObject, public HippoInterface
 {
 public:
   static InputParameters validParams();
   AdjacentCellBulkTemperature(const InputParameters & params);
 
   void execute() override;
-  void initialize() override {};
-  void finalize() override {};
 
   Real spatialValue(const Point & point) const override;
 

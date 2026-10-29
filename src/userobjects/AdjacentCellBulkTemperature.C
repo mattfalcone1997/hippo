@@ -1,5 +1,4 @@
 #include "AdjacentCellBulkTemperature.h"
-#include "FoamProblem.h"
 #include "MooseTypes.h"
 #include "WallQuantitiesFactory.h"
 #include "petsclog.h"
@@ -25,9 +24,8 @@ registerMooseObject("hippoApp", AdjacentCellBulkTemperature);
 InputParameters
 AdjacentCellBulkTemperature::validParams()
 {
-  InputParameters params = GeneralUserObject::validParams();
+  InputParameters params = BulkTemperatureUserObject::validParams();
   params.addRequiredParam<SubdomainName>("boundary", "Boundary this object applies to.");
-  params.addParam<std::string>("T_name", "T", "Temperature name in the OpenFOAM simulation.");
   params.addParam<int>("max_leaf_size", 10, "Maximum leaf size to use for the KD tree search.");
   params.addParam<MooseEnum>("wall_quantity",
                              Hippo::internal::getWallQuantitiesEnum(),
@@ -36,7 +34,7 @@ AdjacentCellBulkTemperature::validParams()
 }
 
 AdjacentCellBulkTemperature::AdjacentCellBulkTemperature(const InputParameters & params)
-  : GeneralUserObject(params),
+  : BulkTemperatureUserObject(params),
     HippoInterface(this),
     _foam_patch{getFoamPatch(getParam<SubdomainName>("boundary"))},
     _kd_centres{},
@@ -55,7 +53,7 @@ AdjacentCellBulkTemperature::buildKDTree()
   Foam::vectorField face_centres = _foam_patch.Cf();
   const int l_num_faces = face_centres.size();
   const int nProcs{Foam::UPstream::nProcs()};
-  const MPI_Comm comm{(nProcs == 1) ? MPI_COMM_WORLD : Foam::PstreamGlobals::MPI_COMM_FOAM};
+  const MPI_Comm comm{_communicator.get()};
 
   if (_gl_t_adjacent.size() == 0)
   {
@@ -126,6 +124,8 @@ const Foam::fvPatch &
 AdjacentCellBulkTemperature::getFoamPatch(const std::string & boundary)
 {
   const Foam::label & boundaryId{getFvMesh().boundary().findIndex(boundary)};
+  if (boundaryId < 0)
+    mooseError("Boundary '", boundary, "' not found in OpenFOAM mesh.");
   return getFvMesh().boundary()[boundaryId];
 }
 

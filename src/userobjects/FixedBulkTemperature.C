@@ -1,5 +1,4 @@
 #include "FixedBulkTemperature.h"
-#include "GeneralUserObject.h"
 #include "InputParameters.h"
 
 registerMooseObject("hippoApp", FixedBulkTemperature);
@@ -7,14 +6,14 @@ registerMooseObject("hippoApp", FixedBulkTemperature);
 InputParameters
 FixedBulkTemperature::validParams()
 {
-  InputParameters params = GeneralUserObject::validParams();
+  InputParameters params = BulkTemperatureUserObject::validParams();
   params.addRequiredParam<Real>("T_bulk", "Fixed reference temperature");
 
   return params;
 }
 
 FixedBulkTemperature::FixedBulkTemperature(const InputParameters & params)
-  : GeneralUserObject(params), _T_bulk(getParam<Real>("T_bulk"))
+  : BulkTemperatureUserObject(params), _T_bulk(getParam<Real>("T_bulk"))
 {
 }
 
