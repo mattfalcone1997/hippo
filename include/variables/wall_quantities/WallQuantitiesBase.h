@@ -17,6 +17,8 @@ class WallQuantitiesBase : protected HippoInterface
 {
 public:
   explicit WallQuantitiesBase(const MooseObject * moose_object);
+  // Virtual destructor
+  virtual ~WallQuantitiesBase() = default;
   // Wall temperature on patch boundary.
   virtual Foam::scalarField wallTemperature(const SubdomainName & boundary) = 0;
   // Wall heat flux on patch boundary.

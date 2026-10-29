@@ -24,5 +24,5 @@ From the repository root, with Hippo built:
 ```bash
 source external/openfoam/OpenFOAM-14/etc/bashrc
 unset FOAM_SIGFPE FOAM_SETNAN
-./run_tests -j4 -C test/tests/variables/foam_wall_boiling_variable/
+./run_tests -C test/tests/variables/foam_wall_boiling_variable/
 ```

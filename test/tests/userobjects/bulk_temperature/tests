@@ -1,5 +1,5 @@
 [Tests]
-  requirements = 'Tests bulk temperature user objects for HTC calculations'
+  requirements = 'Adjacent cell and fixed bulk temperature calculations work correctly for HTC calculations'
   [fixed_bulk_tests]
     type = CSVDiff
     input = fixed_bulk_temperature.i
