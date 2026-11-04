@@ -5,7 +5,6 @@
 #include "InputParameters.h"
 #include "MooseTypes.h"
 #include "Registry.h"
-#include "UserObject.h"
 #include <scalar.H>
 #include <scalarField.H>
 #include <string>
@@ -35,7 +34,7 @@ FoamHeatTransferCoeff::FoamHeatTransferCoeff(const InputParameters & params)
   if (t_bulks.size() != boundaries.size())
     mooseError("Sizes of user object and boundary list should be the same.");
 
-  for (auto i = 0lu; i < boundaries.size(); ++i)
+  for (size_t i = 0; i < boundaries.size(); ++i)
   {
     _t_bulk_uo_name[boundaries[i]] = t_bulks[i];
   }

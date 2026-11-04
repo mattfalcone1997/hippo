@@ -3,7 +3,6 @@
 #include <scalar.H>
 #include <scalarField.H>
 #include <cmath>
-#include "UserObject.h"
 
 WallQuantitiesBase::WallQuantitiesBase(const MooseObject * moose_object)
   : HippoInterface(moose_object)
@@ -11,7 +10,8 @@ WallQuantitiesBase::WallQuantitiesBase(const MooseObject * moose_object)
 }
 
 Foam::scalarField
-WallQuantitiesBase::heatTransferCoefficient(const SubdomainName & boundary, UserObject & t_bulk_uo)
+WallQuantitiesBase::heatTransferCoefficient(const SubdomainName & boundary,
+                                            BulkTemperatureUserObject & t_bulk_uo)
 {
   const Foam::scalarField T_wall{wallTemperature(boundary)};
   const Foam::scalarField q{wallHeatFlux(boundary)};

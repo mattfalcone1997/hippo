@@ -9,6 +9,7 @@
 #include <UList.H>
 #include <UPstream.H>
 #include <VectorSpace.H>
+#include <cstdint>
 #include <face.H>
 #include <fvMesh.H>
 #include <memory>
@@ -52,16 +53,13 @@ AdjacentCellBulkTemperature::buildKDTree()
 {
   Foam::vectorField face_centres = _foam_patch.Cf();
   const int l_num_faces = face_centres.size();
-  const int nProcs{Foam::UPstream::nProcs()};
+  const uint32_t nProcs{_communicator.size()};
   const MPI_Comm comm{_communicator.get()};
 
-  if (_gl_t_adjacent.size() == 0)
-  {
-    int gl_size;
-    MPI_Allreduce(&l_num_faces, &gl_size, 1, MPI_INT, MPI_SUM, comm);
-    _gl_t_adjacent.resize(gl_size);
-    _kd_centres.resize(gl_size);
-  }
+  int gl_size;
+  MPI_Allreduce(&l_num_faces, &gl_size, 1, MPI_INT, MPI_SUM, comm);
+  _gl_t_adjacent.resize(gl_size);
+  _kd_centres.resize(gl_size);
 
   std::vector<int> face_sizes(nProcs);
   std::vector<int> face_displs(nProcs);
@@ -71,13 +69,13 @@ AdjacentCellBulkTemperature::buildKDTree()
   // Create parameters for MPI gather operations to be reused in execute
   MPI_Allgather(&l_num_faces, 1, MPI_INT, _mpi_sizes.data(), 1, MPI_INT, comm);
   _mpi_gather_offsets[0] = 0;
-  for (int i = 0; i < nProcs - 1; ++i)
+  for (uint32_t i = 0; i < nProcs - 1; ++i)
   {
     _mpi_gather_offsets[i + 1] = _mpi_gather_offsets[i] + _mpi_sizes[i];
   }
 
   // Account for vector for gathering coordinates
-  for (int i = 0; i < nProcs; ++i)
+  for (uint32_t i = 0; i < nProcs; ++i)
   {
     face_sizes[i] = _mpi_sizes[i] * 3;
     face_displs[i] = _mpi_gather_offsets[i] * 3;

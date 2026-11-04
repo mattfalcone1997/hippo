@@ -1,5 +1,6 @@
 #pragma once
 
+#include "BulkTemperatureUserObject.h"
 #include "HippoInterface.h"
 #include "MooseObject.h"
 #include "MooseTypes.h"
@@ -27,7 +28,7 @@ public:
   virtual Foam::scalarField internalTemperature(const Foam::labelUList & cells) = 0;
   // HTC computed from T_w, q_w and bulk temperature user object
   virtual Foam::scalarField heatTransferCoefficient(const SubdomainName & boundary,
-                                                    UserObject & t_bulk_uo);
+                                                    BulkTemperatureUserObject & t_bulk_uo);
 
 protected:
   const Foam::fvPatch & getFoamPatch(const SubdomainName & boundary);

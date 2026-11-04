@@ -8,6 +8,8 @@ public:
   static InputParameters validParams();
   BulkTemperatureUserObject(const InputParameters & params);
 
-  void initialize() override {};
-  void finalize() override {};
+  void initialize() final {};
+  void finalize() final {};
+
+  Real spatialValue(const Point & /*p*/) const override = 0;
 };
